@@ -1,23 +1,14 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-
-public class Enemy : MonoBehaviour
+using UnityEngine.UI;
+using System.Linq;
+public class Enemy : Character
 {
-    public string unitName;
-    public int maxHP;
-    public int currHP;
-    public int attack;
-    public int defense;
-    public int luck;
-    public int agility;
-    public int magAtk;
-    public int magDef;
     public int expValue;
     public int goldValue;
-    public int level;
     public Rarity rarity;
-
     public enum Rarity
     {
         COMMON,
@@ -40,15 +31,29 @@ public class Enemy : MonoBehaviour
 
         throw new Exception("Error generating enemy rarity");
     }
-    public bool TakeDamage(int attack)
-    {
-        currHP -= (attack * 2) - defense;
 
-        if (currHP <= 0)
+    public virtual Character FindTarget(List<PlayerCharacter> characters)
+    {
+        List<PlayerCharacter> target = new List<PlayerCharacter>();
+
+        if (characters.Count == 1) return characters.First();
+
+        if (characters.Where(c => c.currHP < (.25*c.maxHP)).Count() > 0)
         {
-            currHP = 0;
-            return true;
+            target = characters.Where(c => c.currHP < (.25*c.maxHP)).ToList();
+
+            if (target.Where(c => !c.isBackRow).Count() > 0) 
+            {
+                target = target.Where(c => !c.isBackRow).ToList();
+                int random = UnityEngine.Random.Range(0, target.Count() - 1);
+                return target[random];
+            }
         }
-        return false;
+        while (true)
+        {
+            int random = UnityEngine.Random.Range(0, characters.Count() - 1);
+
+            if (!characters[random].isBackRow) return characters[random];
+        }
     }
 }

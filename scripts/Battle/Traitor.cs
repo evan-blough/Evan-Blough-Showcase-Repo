@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Hero : PlayerCharacter
-{    
+public class Traitor : PlayerCharacter
+{
 
 }
