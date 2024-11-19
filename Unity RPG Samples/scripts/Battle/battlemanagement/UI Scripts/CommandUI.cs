@@ -13,15 +13,14 @@ public class CommandUI : MonoBehaviour
 
     public void CommandButtonClick()
     {
-        bsm.commandHUD.gameObject.SetActive(true);
-        bsm.skillHUD.gameObject.SetActive(false);
+        bsm.uiHandler.UIOnCommand();
         swapPositionsButton.gameObject.SetActive(!bsm.currentCharacter.isBackRow);
         recoverButton.gameObject.SetActive(bsm.currentCharacter.isBackRow);
     }
 
     public void OnRecoverButton()
     {
-        bsm.ResetUI();
+        bsm.uiHandler.ResetUI();
 
         bsm.currentCharacter.currHP += (bsm.currentCharacter.maxHP / 10) + 1;
         bsm.currentCharacter.currSP += (bsm.currentCharacter.maxSP / 10) + 1;
@@ -37,30 +36,23 @@ public class CommandUI : MonoBehaviour
 
     public void OnSwapPositionsButton()
     {
-        bsm.ResetUI();
+        bsm.uiHandler.ResetUI();
 
         if (bsm.playerCharacterList.Where(c => c.isBackRow).FirstOrDefault() is null)
         {
-            bsm.currentCharacter.transform.SetParent(bsm.backRowStation);
+            bsm.currentCharacter.transform.SetParent(bsm.battleStationManager.backBattleStation);
         }
-
-        Character tempChar = bsm.backRowStation.GetComponentInChildren<Character>();
-        Transform temp = bsm.currentCharacter.transform.parent;
-
-        bsm.currentCharacter.transform.SetParent(bsm.backRowStation);
-        bsm.currentCharacter.transform.position = bsm.backRowStation.position;
-        bsm.currentCharacter.isBackRow = true;
-
-        tempChar.transform.SetParent(temp);
-        tempChar.transform.position = temp.position;
-        tempChar.isBackRow = false;
+        else
+        {
+            bsm.battleStationManager.SwapStations(bsm.currentCharacter);
+        }
 
         StartCoroutine(bsm.FindNextTurn());
     }
 
     public void OnDefendButton()
     {
-        bsm.ResetUI();
+        bsm.uiHandler.ResetUI();
         Statuses status = new Statuses(Status.DEFENDING, bsm.turnCounter + 1);
         if (bsm.currentCharacter.currStatuses.Where(s => s.status == Status.DEFENDING).Any())
             bsm.currentCharacter.currStatuses.First(s => s.status == Status.DEFENDING).expirationTurn = bsm.turnCounter + 1;
@@ -71,7 +63,7 @@ public class CommandUI : MonoBehaviour
     }
     public void OnItemsButton()
     {
-        bsm.ResetUI();
+        bsm.uiHandler.ResetUI();
         StartCoroutine(bsm.FindNextTurn());
     }
 }

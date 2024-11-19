@@ -13,7 +13,6 @@ public class TargetingUI : MonoBehaviour
     public SkillsHUD skillsHUD;
     public BattleStateMachine bsm;
 
-    // for finding targets of a regular attack
     public void FindTarget(Character target)
     {
          if (skillsHUD.currentSkill == null)
@@ -30,7 +29,7 @@ public class TargetingUI : MonoBehaviour
     {
         if (skillsHUD.currentSkill == null)
         {
-            foreach (Character target in targets) bsm.currentCharacter.Attack(target);
+            foreach (Character target in targets) bsm.currentCharacter.Attack(target, bsm.turnCounter);
             return;
         }
 
@@ -56,7 +55,8 @@ public class TargetingUI : MonoBehaviour
 
         for (int i = 0; i < enemyButtons.Length && i < enemies.Length; ++i)
         {
-            if (enemies[i].enemy.isActive)
+            if (enemies[i].enemy.isActive && (enemies.Where(e => e.enemy.isActive).ToList().Count == enemies.Where(e => e.enemy.isBackRow).ToList().Count 
+                                            || !enemies[i].enemy.isBackRow))
                 enemyButtons[i].interactable = true;
         }
     }

@@ -58,4 +58,9 @@ public class HUDHandler : MonoBehaviour
 
         return list;
     }
+
+    public void DeactivateEnemyHud()
+    {
+        enemyList.gameObject.SetActive(false);
+    }
 }

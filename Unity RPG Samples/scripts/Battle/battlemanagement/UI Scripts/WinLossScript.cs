@@ -16,19 +16,28 @@ public class WinLossScript : MonoBehaviour
     public Text wizardGoldText;
     public Text senatorGoldText;
 
-    public void SetWinBox(Enemy enemy, Hero hero, Wizard wizard, Traitor senator)
+    public void SetWinBox(List<Enemy> enemies, Hero hero, Wizard wizard, Traitor senator)
     {
+        int expGained = 0;
+        int goldGained = 0;
+
+        foreach (Enemy enemy in enemies)
+        {
+            expGained += enemy.expValue;
+            goldGained += enemy.goldValue;
+        }
+
         if (hero.isInParty)
         {
             heroText.text = hero.unitName;
             heroExpText.text = "0";
             heroGoldText.text = "0";
-            if (!hero.isIncapacitated)
+            if (hero.isActive)
             {
-                hero.exp += enemy.expValue;
-                hero.gold += enemy.goldValue;
-                heroExpText.text = enemy.expValue.ToString();
-                heroGoldText.text = enemy.goldValue.ToString();
+                hero.exp += expGained;
+                hero.gold += goldGained;
+                heroExpText.text = expGained.ToString();
+                heroGoldText.text = goldGained.ToString();
             }
         }
         if (wizard.isInParty)
@@ -36,12 +45,12 @@ public class WinLossScript : MonoBehaviour
             wizardText.text = wizard.unitName;
             wizardExpText.text = "0";
             wizardGoldText.text = "0";
-            if (!wizard.isIncapacitated)
+            if (wizard.isActive)
             {
-                wizard.exp += enemy.expValue;
-                wizard.gold += enemy.goldValue;
-                wizardExpText.text = enemy.expValue.ToString();
-                wizardGoldText.text = enemy.goldValue.ToString();
+                wizard.exp += expGained;
+                wizard.gold += goldGained;
+                wizardExpText.text = expGained.ToString();
+                wizardGoldText.text = goldGained.ToString();
             }
         }
         if (senator.isInParty)
@@ -49,12 +58,12 @@ public class WinLossScript : MonoBehaviour
             senatorText.text = senator.unitName;
             senatorExpText.text = "0";
             senatorGoldText.text = "0";
-            if (!senator.isIncapacitated)
+            if (senator.isActive)
             {
-                senator.exp += enemy.expValue;
-                senator.gold += enemy.goldValue;
-                senatorExpText.text = enemy.expValue.ToString();
-                senatorGoldText.text = enemy.goldValue.ToString();
+                senator.exp += expGained;
+                senator.gold += goldGained;
+                senatorExpText.text = expGained.ToString();
+                senatorGoldText.text = goldGained.ToString();
             }
         }
     }

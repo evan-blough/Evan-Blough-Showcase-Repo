@@ -12,35 +12,23 @@ public enum BattleStates
 public class BattleStateMachine: MonoBehaviour
 {
     public GameObject heroPrefab;
-    public GameObject enemyPrefab;
+    public GameObject ogrePrefab;
     public GameObject wizardPrefab;
     public GameObject senatorPrefab;
-
-    public Transform topBattleStation;
-    public Transform lowerBattleStation;
-    public Transform enemyBattleStation;
-    public Transform backRowStation;
+    public GameObject wolfPrefab;
+    public BattleStationManager battleStationManager;
     public Button attackButton;
 
     Hero heroUnit;
     Wizard wizardUnit;
     Traitor senatorUnit;
-    Enemy enemyUnit;
+    Ogre ogreUnit;
+    Wolf wolfUnit;
 
-    public Text upperStationDamage;
-    public Text lowerStationDamage;
-    public Text backRowDamage;
-    public Text enemyDamage;
+    public UIHandler uiHandler;
 
     public float animSpeed = 5f;
-    public GameObject skillHUD;
-    public GameObject commandHUD;
-    public GameObject battleHUD;
     public HUDHandler dataHudHandler;
-    public WinLossScript winBox;
-    public GameObject lossBox;
-    public FleeScript fleeBox;
-    public TargetingUI targetingUI;
 
     public List<Character> turnOrder;
     public Character currentCharacter;
@@ -53,53 +41,38 @@ public class BattleStateMachine: MonoBehaviour
     // Start is called before the first frame update
     public void Start()
     {
-        battleHUD.gameObject.SetActive(false);
-        skillHUD.gameObject.SetActive(false);
-        commandHUD.gameObject.SetActive(false);
-        winBox.gameObject.SetActive(false);
-        lossBox.gameObject.SetActive(false);
-        fleeBox.gameObject.SetActive(false);
-        targetingUI.DeactivateButtons();
+        uiHandler.OnStart();
         state = BattleStates.START;
         StartCoroutine(SetupBattle());
-    }
-
-    public void ResetUI()
-    {
-        battleHUD.gameObject.SetActive(false);
-        skillHUD.gameObject.SetActive(false);
-        commandHUD.gameObject.SetActive(false);
-        targetingUI.DeactivateButtons();
     }
 
     public IEnumerator SetupBattle()
     {
         if (heroPrefab.GetComponent<Hero>().isInParty)
         {
-            GameObject heroGO = Instantiate(heroPrefab, topBattleStation);
-            heroUnit = heroGO.GetComponent<Hero>();
+            heroUnit = (Hero)battleStationManager.SetStation(heroPrefab, 0);
             playerCharacterList.Add(heroUnit);
         }
 
         if (wizardPrefab.GetComponent<Wizard>().isInParty)
         {
-            GameObject wizardGO = Instantiate(wizardPrefab, lowerBattleStation);
-            wizardUnit = wizardGO.GetComponent<Wizard>();
+            wizardUnit = (Wizard)battleStationManager.SetStation(wizardPrefab, 1);
             playerCharacterList.Add(wizardUnit);
         }
 
         if (senatorPrefab.GetComponent<Traitor>().isInParty)
         {
-            GameObject senatorGO = Instantiate(senatorPrefab, backRowStation);
-            senatorUnit = senatorGO.GetComponent<Traitor>();
+            senatorUnit = (Traitor)battleStationManager.SetStation(senatorPrefab, 2);
             playerCharacterList.Add(senatorUnit);
         }
 
-        GameObject enemyGO = Instantiate(enemyPrefab, enemyBattleStation);
+        ogreUnit = (Ogre)battleStationManager.SetStation(ogrePrefab, 3);
+        ogreUnit.rarity = Enemy.InitializeRarity();
+        enemies.Add(ogreUnit);
 
-        enemyUnit = enemyGO.GetComponent<Enemy>();
-        enemyUnit.rarity = Enemy.InitializeRarity();
-        enemies.Add(enemyUnit);
+        wolfUnit = (Wolf)battleStationManager.SetStation(wolfPrefab, 4);
+        wolfUnit.rarity = Enemy.InitializeRarity();
+        enemies.Add(wolfUnit);
 
         characterHUDList = dataHudHandler.CreateCharacterHuds(playerCharacterList);
         enemyHUDList = dataHudHandler.CreateEnemyHuds(enemies);
@@ -114,17 +87,24 @@ public class BattleStateMachine: MonoBehaviour
     public IEnumerator FindNextTurn()
     {
         yield return new WaitForSeconds(.25f);
-        targetingUI.DeactivateButtons();
+
+        uiHandler.ResetUI();
         UpdateHUDs();
         turnOrder.RemoveAll(c => !c.isActive);
 
-        if (playerCharacterList.Where(c => !c.isIncapacitated).Count() == 0)
+        if (playerCharacterList.Any(c => !c.isActive && !c.isBackRow) &&
+            playerCharacterList.Any(c => c.isActive && c.isBackRow))
+        {
+            battleStationManager.SwapStations(playerCharacterList.Where(c => !c.isActive && !c.isBackRow).First());
+        }
+
+        if (!playerCharacterList.Any(c => c.isActive))
         {
             state = BattleStates.LOSS;
             EndBattle();
             yield break;
         }
-        else if (enemies.Where(e => e.isActive).ToList().Count == 0)
+        else if (!enemies.Any(e => e.isActive))
         {
             state = BattleStates.WIN;
             EndBattle();
@@ -135,25 +115,10 @@ public class BattleStateMachine: MonoBehaviour
         {
             turnCounter++;
 
-            if (heroUnit.isActive && heroUnit.isInParty) turnOrder.Add(heroUnit);
+            turnOrder.AddRange(playerCharacterList.Where(c => c.isActive && c.isInParty).ToList());
+            turnOrder.AddRange(enemies.Where(c => c.isActive).ToList());
 
-            if (enemyUnit.isActive) turnOrder.Add(enemyUnit);
-
-            if (wizardUnit.isActive && wizardUnit.isInParty) turnOrder.Add(wizardUnit);
-
-            if (senatorUnit.isActive && senatorUnit.isInParty) turnOrder.Add(senatorUnit);
-
-            for (int i = 0; i < turnOrder.Count - 1; i++)
-            {
-                for (int j = 1; j < turnOrder.Count; j++)
-                {
-                    if (turnOrder[i].agility + (.1 * turnOrder[i].luck + Random.Range(0,3)) <
-                        turnOrder[j].agility + (.1 * turnOrder[j].luck + Random.Range(0, 3)))
-                    {
-                        (turnOrder[i], turnOrder[j]) = (turnOrder[j], turnOrder[i]);
-                    }
-                }
-            }
+            turnOrder = turnOrder.OrderByDescending(c => FindTurnValue(c)).ToList();
         }
         currentCharacter = turnOrder.First();
         turnOrder.Remove(turnOrder[0]);
@@ -179,14 +144,21 @@ public class BattleStateMachine: MonoBehaviour
 
     public void PlayerTurn()
     {
-        if (currentCharacter.currStatuses.Where(s => s.status == Status.POISONED).Any()) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 16);
-        if (currentCharacter.currStatuses.Where(s => s.status == Status.BLEED).Any()) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 10);
-        if (currentCharacter.currStatuses.Where(s => s.status == Status.PARALYZED).Any())
+        if (currentCharacter.currStatuses.Any(s => s.status == Status.POISONED)) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 16);
+        if (currentCharacter.currStatuses.Any(s => s.status == Status.BLEED)) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 10);
+        if (currentCharacter.currStatuses.Any(s => s.status == Status.PARALYZED))
         {
             StartCoroutine(FindNextTurn());
             return;
         }
-        if (currentCharacter.currStatuses.Where(s => s.status == Status.BERSERK).Any())
+        if (currentCharacter.currHP <= 0)
+        {
+            currentCharacter.currHP = 0;
+            currentCharacter.isActive = false;
+            StartCoroutine(FindNextTurn());
+            return;
+        }
+        if (currentCharacter.currStatuses.Any(s => s.status == Status.BERSERK))
         {
             if (enemies.Count > 1)
             StartCoroutine(PlayerAttack(enemies.Where(t => !t.isBackRow && t.isActive).ToList()[Random.Range(0, enemies.Count - 1)]));
@@ -194,24 +166,24 @@ public class BattleStateMachine: MonoBehaviour
             StartCoroutine(PlayerAttack(enemies.First()));
             return;
         }
-        battleHUD.gameObject.SetActive(true);
+        uiHandler.battleHUD.gameObject.SetActive(true);
         attackButton.gameObject.SetActive(!currentCharacter.isBackRow); 
     }
     public IEnumerator PlayerAttack(Character target)
     {
         state = BattleStates.WAIT;
 
-        ResetUI();
+        uiHandler.ResetUI();
 
-        int attackPower = currentCharacter.Attack(target);
+        int attackPower = currentCharacter.Attack(target, turnCounter);
 
-        SetText(attackPower.ToString(), target);
+        battleStationManager.SetText(attackPower.ToString(), target);
 
         yield return new WaitForSeconds(.55f);
 
-        SetText(string.Empty, target);
+        battleStationManager.SetText(string.Empty, target);
 
-        if(target.currHP == 0) { target.isActive = false; }
+        if(target.currHP <= 0) { target.isActive = false; }
 
         yield return new WaitForSeconds(.75f);
 
@@ -220,67 +192,55 @@ public class BattleStateMachine: MonoBehaviour
     }
     public void EndBattle()
     {
-        ResetUI();
+        uiHandler.ResetUI();
+        dataHudHandler.DeactivateEnemyHud();
 
-        if(state == BattleStates.LOSS )
+        if (state == BattleStates.LOSS )
         {
-            lossBox.gameObject.SetActive(true);
+            uiHandler.OnLoss();
         }
         else if (state == BattleStates.WIN )
         {
-            winBox.SetWinBox(enemyUnit, heroUnit, wizardUnit, senatorUnit);
-            winBox.gameObject.SetActive(true);
+            uiHandler.OnWin(enemies, heroUnit, wizardUnit, senatorUnit);
         }
         else if (state == BattleStates.FLEE)
         {
-            fleeBox.gameObject.SetActive(true);
+            uiHandler.OnFlee(true); 
         }
     }
-    public IEnumerator EnemyTurn(Enemy enemy)
+    public IEnumerator EnemyTurn(Enemy currentEnemy)
     {
-        if (currentCharacter.currStatuses.Where(s => s.status == Status.POISONED).Any()) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 16);
-        if (currentCharacter.currStatuses.Where(s => s.status == Status.BLEED).Any()) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 10);
-        if (currentCharacter.currStatuses.Where(s => s.status == Status.PARALYZED).Any())
+        if (currentCharacter.currStatuses.Any(s => s.status == Status.POISONED)) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 16);
+        if (currentCharacter.currStatuses.Any(s => s.status == Status.BLEED)) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 10);
+        if (currentCharacter.currStatuses.Any(s => s.status == Status.PARALYZED))
         {
             StartCoroutine(FindNextTurn());
             yield break;
         }
-
-        Character targetUnit = enemy.FindTarget(playerCharacterList.Where(c => c.isActive && !c.isIncapacitated).ToList());
-
-        int damage = enemyUnit.Attack(targetUnit);
-
-        if(targetUnit.currHP < 0 ) { heroUnit.currHP = 0;}
-
-        SetText(damage.ToString(), targetUnit);
-
-        yield return new WaitForSeconds(0.5f);
-
-        SetText(string.Empty, targetUnit);
-
-        yield return new WaitForSeconds(0.75f);
-
-        if (targetUnit.currHP <= 0)
+        if (currentCharacter.currHP <= 0)
         {
-            targetUnit.isActive = false;
-            targetUnit.isIncapacitated = true;
-            turnOrder.Remove(targetUnit);
+            currentCharacter.currHP = 0;
+            currentCharacter.isActive = false;
+            StartCoroutine(FindNextTurn());
+            yield break;
         }
+
+        yield return StartCoroutine(currentEnemy.EnemyTurn(playerCharacterList, enemies, turnCounter, battleStationManager, uiHandler.enemySkillUI));
         
         state = BattleStates.WAIT;
         StartCoroutine(FindNextTurn());
     }
     public void OnAttackButton()
     {
-        targetingUI.ActivateTargets(currentCharacter);
+        uiHandler.UIOnAttack(currentCharacter);
     }
 
     public void OnFleeButton()
     {
-        ResetUI();
+        uiHandler.ResetUI();
 
-        bool fleeCheck = heroUnit.FleeCheck(enemyUnit);
-        fleeBox.SetFleeBox(fleeCheck);
+        bool fleeCheck = currentCharacter.FleeCheck(enemies.Where(e => e.isActive).OrderByDescending(c => c.agility).First(), turnCounter);
+        uiHandler.fleeBox.SetFleeBox(fleeCheck);
         
         if (fleeCheck)
         {
@@ -295,9 +255,9 @@ public class BattleStateMachine: MonoBehaviour
 
     IEnumerator FailedFlee()
     {
-        fleeBox.gameObject.SetActive(true);
+        uiHandler.OnFlee(true);
         yield return new WaitForSeconds(1f);
-        fleeBox.gameObject.SetActive(false);
+        uiHandler.OnFlee(false);
         yield return new WaitForSeconds(.5f);
 
         StartCoroutine(FindNextTurn());
@@ -309,31 +269,12 @@ public class BattleStateMachine: MonoBehaviour
         foreach (EnemyHUD hud in enemyHUDList) hud.SetHUD();
     }
 
-    public void SetText(string text, Character unit)
+    public int FindTurnValue(Character character)
     {
-        if (unit.gameObject.transform.parent == topBattleStation)
-        {
-            upperStationDamage.text = text == "0" ? "MISS" : text;
-        }
-        if (unit.gameObject.transform.parent == lowerBattleStation)
-        {
-            lowerStationDamage.text = text == "0" ? "MISS" : text;
-        }
-        if (unit.gameObject.transform.parent == backRowStation)
-        {
-            backRowDamage.text = text == "0" ? "MISS" : text;
-        }
-        if (unit is Enemy)
-        {
-            enemyDamage.text = text == "0" ? "MISS" : text;
-        }
-    }
+        int returnValue = character.agility + (character.luck / 10);
 
-    public void SetTextColor(Color color)
-    {
-        upperStationDamage.color = color;
-        lowerStationDamage.color = color;
-        backRowDamage.color = color;
-        enemyDamage.color = color;
+        returnValue += Random.Range(0, 3);
+
+        return returnValue;
     }
 }
