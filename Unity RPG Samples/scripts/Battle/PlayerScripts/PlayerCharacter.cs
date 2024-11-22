@@ -7,6 +7,7 @@ public class PlayerCharacter : Character
 {
     public EquipmentWeight weightClass;
     public List<Skills> skills;
+    public BattleInventory charInventory;
     public Weapon weapon;
     public Armor armor;
     public Accessory accessory1;

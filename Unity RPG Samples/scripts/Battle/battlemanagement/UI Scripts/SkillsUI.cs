@@ -90,7 +90,7 @@ public class SkillsHUD : MonoBehaviour
 
     public void HandleSkillText(List<Character> target, List<string> text, SkillType type)
     {
-        Color color = (type == SkillType.HEAL ? Color.green : Color.white);
+        Color color = ((type == SkillType.HEAL || type == SkillType.REVIVE) ? Color.green : Color.white);
 
         bsm.battleStationManager.SetTextColor(color);
 

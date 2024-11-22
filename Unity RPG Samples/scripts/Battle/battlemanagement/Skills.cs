@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
 public enum SkillType { ATTACK, HEAL, STATUS, REVIVE };
@@ -64,16 +65,16 @@ public enum SkillType { ATTACK, HEAL, STATUS, REVIVE };
         }
     }
 
-    public string TargetStatusApplication(Character character, Statuses oldStatus, Character target, int turnCounter)
+    public string TargetStatusApplication(Character character, Statuses statusToApply, Character target, int turnCounter)
     {
-        Statuses status = new Statuses(oldStatus);
+        Statuses status = new Statuses(statusToApply);
         if (target.immunities.Where(s => s == status.status).Any())
             return "Immune";
         if (status.accuracy * 100 >= Random.Range(0, 100))
         {
             if (!target.resistances.Where(s => s == status.status).Any() || Random.Range(0, 1) == 1)
             {
-                if (target.currStatuses.FirstOrDefault(s => s.status == status.status) != null)
+                if (target.currStatuses.Any(s => s.status == status.status))
                 {
                     target.currStatuses.RemoveAll(s => s.status == status.status);
                 }
@@ -92,9 +93,9 @@ public enum SkillType { ATTACK, HEAL, STATUS, REVIVE };
         return "Missed";
     }
 
-    public void TargetStatusRemoval(Character character, Statuses oldStatus, Character target, int turnCounter)
+    public void TargetStatusRemoval(Character character, Statuses statusToRemove, Character target, int turnCounter)
     {
-        Statuses status = new Statuses(oldStatus);
+        Statuses status = new Statuses(statusToRemove);
         var curingStatus = target.currStatuses.FirstOrDefault(s => s.status == status.status);
         if (curingStatus != null && curingStatus.canBeCured)
         {
@@ -144,32 +145,34 @@ public enum SkillType { ATTACK, HEAL, STATUS, REVIVE };
         foreach (var target in targets)
         {
             if (target.elemAbsorptions.Where(e => e == elemAttribute).Any()) { returnDamages.Add("Immune"); }
-
-            enemyAgility = target.agility;
-            hitCheck = (((charAgility  / enemyAgility) * accuracyModifier) + .01) * 100;
-            if (hitCheck >= Random.Range(0, 100))
+            else
             {
-                foreach (var status in applyTargetStatuses) TargetStatusApplication(character, status, target, turnCounter);
-                foreach (var status in removeTargetStatuses) TargetStatusRemoval(character, status, target, turnCounter);
+                enemyAgility = target.agility;
+                hitCheck = (((charAgility / enemyAgility) * accuracyModifier) + .01) * 100;
+                if (hitCheck >= Random.Range(0, 100))
+                {
+                    foreach (var status in applyTargetStatuses) TargetStatusApplication(character, status, target, turnCounter);
+                    foreach (var status in removeTargetStatuses) TargetStatusRemoval(character, status, target, turnCounter);
 
-                int damage = (int)((isMagic ? character.magAtk : character.attack * character.FindPhysicalAttackStatusModifier())
-                    * Random.Range(1f, 1.25f) * powerModifier * ((Random.Range(1, 20) * criticalModifier) >= Random.Range(1, 20) ? 2 : 1)) / targets.Count;
+                    int damage = (int)((isMagic ? character.magAtk : character.attack * character.FindPhysicalAttackStatusModifier())
+                        * Random.Range(1f, 1.25f) * powerModifier * ((Random.Range(1, 20) * criticalModifier) >= Random.Range(1, 20) ? 2 : 1)) / targets.Count;
 
-                damage = (int)(damage - (isMagic ? target.magDef : target.defense));
+                    damage = (int)(damage - (isMagic ? target.magDef : target.defense));
 
-                damage = (int)(damage * target.FindElementalDamageModifier(elemAttribute));
+                    damage = (int)(damage * target.FindElementalDamageModifier(elemAttribute));
 
-                if (damage <= 0) damage = 1;
+                    if (damage <= 0) damage = 1;
 
-                target.currHP -= damage;
+                    target.currHP -= damage;
 
-                if (target.currHP < 0) target.currHP = 0;
+                    if (target.currHP < 0) target.currHP = 0;
 
-                if (target.currHP <= 0) target.isActive = false;
+                    if (target.currHP <= 0) target.isActive = false;
 
-                returnDamages.Add(damage.ToString());
+                    returnDamages.Add(damage.ToString());
+                }
+                else returnDamages.Add("Miss");
             }
-            else returnDamages.Add("Miss");
         }
 
         return returnDamages;
@@ -191,6 +194,26 @@ public enum SkillType { ATTACK, HEAL, STATUS, REVIVE };
         }
 
         return returnHeals;
+    }
+
+    public List<string> UseRevivalSkill(PlayerCharacter character, List<Character> targets, int turnCounter)
+    {
+        List<string> result = new List<string>();
+
+        foreach (var target in targets)
+        {
+            target.isActive = true;
+
+            int heals = (int)((character.magAtk * powerModifier * Random.Range(.85f, 1.25f)) / targets.Count);
+
+            target.currHP += heals;
+
+            if (target.currHP > target.maxHP) target.currHP = target.maxHP;
+
+            result.Add(heals == 0 ? "Miss" : heals.ToString());
+        }
+
+        return result;
     }
 
     public List<string> UseStatusSkill(PlayerCharacter character, List<Character> targets, int turnCounter)

@@ -61,9 +61,4 @@ public class CommandUI : MonoBehaviour
 
         StartCoroutine(bsm.FindNextTurn());
     }
-    public void OnItemsButton()
-    {
-        bsm.uiHandler.ResetUI();
-        StartCoroutine(bsm.FindNextTurn());
-    }
 }

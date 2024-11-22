@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class UIHandler : MonoBehaviour
 {
-    public DescriptionBox descriptionBox;
+    public DescriptionBox skillDescriptionBox;
+    public DescriptionBox itemDescriptionBox;
     public CostBox costBox;
     public GameObject skillHUD;
     public GameObject commandHUD;
@@ -14,6 +15,7 @@ public class UIHandler : MonoBehaviour
     public FleeScript fleeBox;
     public TargetingUI targetingUI;
     public EnemySkillUI enemySkillUI;
+    public GameObject itemsUI;
 
     public void OnStart()
     {
@@ -25,17 +27,21 @@ public class UIHandler : MonoBehaviour
         fleeBox.gameObject.SetActive(false);
         costBox.gameObject.SetActive(false);
         enemySkillUI.gameObject.SetActive(false);
-        descriptionBox.gameObject.SetActive(false);
+        itemsUI.gameObject.SetActive(false);
+        skillDescriptionBox.gameObject.SetActive(false);
+        itemDescriptionBox.gameObject.SetActive(false);
         targetingUI.DeactivateButtons();
     }
 
     public void ResetUI()
     {
         battleHUD.gameObject.SetActive(false);
+        itemsUI.gameObject.SetActive(false);
         skillHUD.gameObject.SetActive(false);
         commandHUD.gameObject.SetActive(false);
         costBox.gameObject.SetActive(false);
-        descriptionBox.gameObject.SetActive(false);
+        skillDescriptionBox.gameObject.SetActive(false);
+        itemDescriptionBox.gameObject.SetActive(false);
         enemySkillUI.gameObject.SetActive(false);
         targetingUI.DeactivateButtons();
     }
@@ -59,38 +65,63 @@ public class UIHandler : MonoBehaviour
     public void UIOnAttack(Character currentCharacter)
     {
         commandHUD.gameObject.SetActive(false);
+        itemsUI.gameObject.SetActive(false);
         skillHUD.gameObject.SetActive(false);
         costBox.gameObject.SetActive(false);
-        descriptionBox.gameObject.SetActive(false);
+        skillDescriptionBox.gameObject.SetActive(false);
+        itemDescriptionBox.gameObject.SetActive(false);
         targetingUI.ActivateTargets(currentCharacter);
     }
 
     public void UIOnSkills()
     {
         commandHUD.gameObject.SetActive(false);
+        itemsUI.gameObject.SetActive(false);
         costBox.gameObject.SetActive(false);
-        descriptionBox.gameObject.SetActive(false);
+        skillDescriptionBox.gameObject.SetActive(false);
+        itemDescriptionBox.gameObject.SetActive(false);
     }
 
     public void UIOnCommand()
     {
         commandHUD.gameObject.SetActive(true);
         skillHUD.gameObject.SetActive(false);
+        itemsUI.gameObject.SetActive(false);
         costBox.gameObject.SetActive(false);
-        descriptionBox.gameObject.SetActive(false);
+        skillDescriptionBox.gameObject.SetActive(false);
+        itemDescriptionBox.gameObject.SetActive(false);
+    }
+
+    public void UIOnItems()
+    {
+        itemsUI.gameObject.SetActive(true);
+        skillHUD.gameObject.SetActive(false);
+        costBox.gameObject.SetActive(false);
+        skillDescriptionBox.gameObject.SetActive(false);
+        itemDescriptionBox.gameObject.SetActive(false);
     }
 
     public void SetSkillDetails(Skills skill, string currSP)
     {
         costBox.SetCostBox(skill.skillPointCost.ToString(), currSP);
-        descriptionBox.SetDescription(skill.skillDescription);
-        descriptionBox.gameObject.SetActive(true);
+        skillDescriptionBox.SetDescription(skill.skillDescription);
+        skillDescriptionBox.gameObject.SetActive(true);
         costBox.gameObject.SetActive(true);
     }
 
     public void RemoveSkillDetails()
     {
         costBox.gameObject.SetActive(false);
-        descriptionBox.gameObject.SetActive(false);
+        skillDescriptionBox.gameObject.SetActive(false);
+    }
+
+    public void SetItemDetails(Items item)
+    {
+        itemDescriptionBox.SetDescription(item.itemDescription);
+        itemDescriptionBox.gameObject.SetActive(true);
+    }
+    public void RemoveItemDetails()
+    {
+        itemDescriptionBox.gameObject.SetActive(false);
     }
 }
