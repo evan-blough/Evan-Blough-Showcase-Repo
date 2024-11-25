@@ -65,6 +65,9 @@ public class SkillsHUD : MonoBehaviour
             case SkillType.HEAL:
                 returns = currentSkill.UseHealingSkill((PlayerCharacter)bsm.currentCharacter, targets, bsm.turnCounter);
                 break;
+            case SkillType.REVIVE:
+                returns = currentSkill.UseRevivalSkill((PlayerCharacter)bsm.currentCharacter, targets, bsm.turnCounter);
+                break;
             case SkillType.STATUS:
                 returns = currentSkill.HandleStatusApplication((PlayerCharacter)bsm.currentCharacter, targets, bsm.turnCounter);
                 break;

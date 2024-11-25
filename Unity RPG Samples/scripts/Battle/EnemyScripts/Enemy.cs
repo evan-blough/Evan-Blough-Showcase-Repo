@@ -65,6 +65,7 @@ public class Enemy : Character
             {
                 damage = 1;
             }
+            if (damage > 9999) damage = 9999;
 
             enemy.currHP -= damage;
             if (enemy.currHP < 0) enemy.currHP = 0;

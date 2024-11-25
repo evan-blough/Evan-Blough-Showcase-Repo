@@ -21,7 +21,7 @@ public class BattleStateMachine: MonoBehaviour
 
     Hero heroUnit;
     Wizard wizardUnit;
-    Traitor senatorUnit;
+    Senator senatorUnit;
     Ogre ogreUnit;
     Wolf wolfUnit;
 
@@ -60,9 +60,9 @@ public class BattleStateMachine: MonoBehaviour
             playerCharacterList.Add(wizardUnit);
         }
 
-        if (senatorPrefab.GetComponent<Traitor>().isInParty)
+        if (senatorPrefab.GetComponent<Senator>().isInParty)
         {
-            senatorUnit = (Traitor)battleStationManager.SetStation(senatorPrefab, 2);
+            senatorUnit = (Senator)battleStationManager.SetStation(senatorPrefab, 2);
             playerCharacterList.Add(senatorUnit);
         }
 

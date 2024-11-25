@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class PlayerCharacter : Character
 {
+    public ExperienceHandler expHandler;
     public EquipmentWeight weightClass;
     public List<Skills> skills;
     public BattleInventory charInventory;
@@ -15,6 +16,11 @@ public class PlayerCharacter : Character
     public int gold;
     public bool isInParty;
     public int exp;
+
+    private void Start()
+    {
+        expHandler.UpdateLevel(this);
+    }
 
     public override int attack 
     { 
@@ -133,6 +139,7 @@ public class PlayerCharacter : Character
             {
                 damage = 1;
             }
+            if (damage > 9999) damage = 9999;
 
             enemy.currHP -= damage;
             if (enemy.currHP < 0) enemy.currHP = 0;
@@ -140,6 +147,21 @@ public class PlayerCharacter : Character
             return damage;
         }
         return 0;
+    }
+
+    public virtual void OnLevelUp()
+    {
+        maxHP += 20;
+        maxSP += 10;
+        strength += 3;
+        constitution += 3;
+        intelligence += 3;
+        spirit += 3;
+        speed += 3;
+        luck += 3;
+
+        currHP = maxHP;
+        currSP = maxSP;
     }
 
     public override bool FleeCheck(Character enemy, int turnCounter)

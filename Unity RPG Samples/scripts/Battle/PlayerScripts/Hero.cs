@@ -24,4 +24,25 @@ public class Hero : PlayerCharacter
                 + (accessory1 is null ? 0 : accessory1.agilityBuff) + (accessory2 is null ? 0 : accessory2.agilityBuff);
         }
     }
+    public override void OnLevelUp()
+    {
+        if (level % 5 == 0)
+        {
+            base.OnLevelUp();
+            return;
+        }
+
+
+        maxHP += Random.Range(8, 20);
+        maxSP += Random.Range(3, 7);
+        strength += Random.Range(2, 4);
+        constitution += Random.Range(1, 4);
+        intelligence += Random.Range(0, 2);
+        spirit += Random.Range(1, 2);
+        speed += Random.Range(1, 3);
+        luck += Random.Range(0, 5);
+
+        currHP = maxHP;
+        currSP = maxSP;
+    }
 }

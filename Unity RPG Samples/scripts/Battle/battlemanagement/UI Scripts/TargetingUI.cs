@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Properties;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -85,7 +86,34 @@ public class TargetingUI : MonoBehaviour
         var enemyButtons = allEnemies.GetComponentsInChildren<Button>().Where(b => b != allEnemies).ToArray();
         var enemies = allEnemies.GetComponentsInChildren<EnemyHUD>();
 
-        if (skill.isMultiTargeted)
+        if (skill.type == SkillType.REVIVE)
+        {
+            if (skill.isMultiTargeted)
+            {
+                allHeroes.interactable = true;
+                allEnemies.interactable = true;
+
+                for (int i = 0; i < buttons.Length && i < characters.Length; ++i) buttons[i].interactable = false;
+                for (int i = 0; i < enemies.Length && i < enemyButtons.Length; ++i) enemyButtons[i].interactable = false;
+            }
+            else
+            {
+                allHeroes.interactable = false;
+                allEnemies.interactable = false;
+
+                for (int i = 0; i < buttons.Length && i < characters.Length; ++i)
+                {
+                    if (!characters[i].character.isActive)
+                        buttons[i].interactable = true;
+                }
+                for (int i = 0; i < enemies.Length && i < enemyButtons.Length; ++i)
+                {
+                    if (!enemies[i].enemy.isActive)
+                        enemyButtons[i].interactable = true;
+                }
+            }
+        }
+        else if (skill.isMultiTargeted)
         {
             allHeroes.interactable = true;
             allEnemies.interactable = true;
@@ -138,6 +166,34 @@ public class TargetingUI : MonoBehaviour
         var enemyButtons = allEnemies.GetComponentsInChildren<Button>().Where(b => b != allEnemies).ToArray();
         var enemies = allEnemies.GetComponentsInChildren<EnemyHUD>();
 
+        if (item.itemEffect.itemType == ItemEffectType.REVIVE)
+        {
+            if (item.itemEffect.isMultiTargeted)
+            {
+                allHeroes.interactable = true;
+                allEnemies.interactable = true;
+
+                for (int i = 0; i < buttons.Length && i < characters.Length; ++i) buttons[i].interactable = false;
+                for (int i = 0; i < enemies.Length && i < enemyButtons.Length; ++i) enemyButtons[i].interactable = false;
+            }
+            else
+            {
+                allHeroes.interactable = false;
+                allEnemies.interactable = false;
+
+                for (int i = 0; i < buttons.Length && i < characters.Length; ++i)
+                {
+                    if (!characters[i].character.isActive)
+                        buttons[i].interactable = true;
+                }
+                for (int i = 0; i < enemies.Length && i < enemyButtons.Length; ++i)
+                { 
+                    if (!enemies[i].enemy.isActive)
+                        enemyButtons[i].interactable = true;
+                }
+            }
+
+        }
         if (item.itemEffect.isMultiTargeted)
         {
             allHeroes.interactable = true;

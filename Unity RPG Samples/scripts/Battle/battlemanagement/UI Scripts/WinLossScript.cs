@@ -16,7 +16,7 @@ public class WinLossScript : MonoBehaviour
     public Text wizardGoldText;
     public Text senatorGoldText;
 
-    public void SetWinBox(List<Enemy> enemies, Hero hero, Wizard wizard, Traitor senator)
+    public void SetWinBox(List<Enemy> enemies, Hero hero, Wizard wizard, Senator senator)
     {
         int expGained = 0;
         int goldGained = 0;
@@ -34,7 +34,7 @@ public class WinLossScript : MonoBehaviour
             heroGoldText.text = "0";
             if (hero.isActive)
             {
-                hero.exp += expGained;
+                hero.expHandler.AddExperience(hero, expGained);
                 hero.gold += goldGained;
                 heroExpText.text = expGained.ToString();
                 heroGoldText.text = goldGained.ToString();
@@ -47,7 +47,7 @@ public class WinLossScript : MonoBehaviour
             wizardGoldText.text = "0";
             if (wizard.isActive)
             {
-                wizard.exp += expGained;
+                wizard.expHandler.AddExperience(wizard, expGained);
                 wizard.gold += goldGained;
                 wizardExpText.text = expGained.ToString();
                 wizardGoldText.text = goldGained.ToString();
@@ -60,7 +60,7 @@ public class WinLossScript : MonoBehaviour
             senatorGoldText.text = "0";
             if (senator.isActive)
             {
-                senator.exp += expGained;
+                senator.expHandler.AddExperience(senator, expGained);
                 senator.gold += goldGained;
                 senatorExpText.text = expGained.ToString();
                 senatorGoldText.text = goldGained.ToString();

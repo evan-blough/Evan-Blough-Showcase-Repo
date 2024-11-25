@@ -51,7 +51,7 @@ public class UIHandler : MonoBehaviour
         lossBox.gameObject.SetActive(true);
     }
 
-    public void OnWin(List<Enemy> enemy, Hero hero, Wizard wizard, Traitor senator)
+    public void OnWin(List<Enemy> enemy, Hero hero, Wizard wizard, Senator senator)
     {
         winBox.SetWinBox(enemy, hero, wizard, senator);
         winBox.gameObject.SetActive(true);

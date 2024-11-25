@@ -45,8 +45,8 @@ public enum SkillType { ATTACK, HEAL, STATUS, REVIVE };
     public void SelfStatusApplication(Character character, Statuses oldStatus, int turnCounter)
     {
         Statuses status = new Statuses(oldStatus);
-        if (character.immunities.Any(s => s == status.status) &&
-            (character.resistances.Any(s => s == status.status) ||
+        if (!character.immunities.Any(s => s == status.status) &&
+            (!character.resistances.Any(s => s == status.status) ||
             Random.Range(0, 1) == 1))
         {
             status.expirationTurn += turnCounter;
@@ -90,7 +90,7 @@ public enum SkillType { ATTACK, HEAL, STATUS, REVIVE };
             }
             return "Resisted";
         }
-        return "Missed";
+        return "Miss";
     }
 
     public void TargetStatusRemoval(Character character, Statuses statusToRemove, Character target, int turnCounter)
@@ -162,6 +162,7 @@ public enum SkillType { ATTACK, HEAL, STATUS, REVIVE };
                     damage = (int)(damage * target.FindElementalDamageModifier(elemAttribute));
 
                     if (damage <= 0) damage = 1;
+                    if (damage > 9999) damage = 9999;
 
                     target.currHP -= damage;
 
@@ -186,6 +187,8 @@ public enum SkillType { ATTACK, HEAL, STATUS, REVIVE };
         {
             int heals = (int)((character.magAtk * powerModifier * Random.Range(.85f, 1.25f)) / targets.Count);
 
+            if (heals > 9999) heals = 9999;
+
             target.currHP += heals;
 
             if (target.currHP > target.maxHP) target.currHP = target.maxHP;
@@ -202,15 +205,22 @@ public enum SkillType { ATTACK, HEAL, STATUS, REVIVE };
 
         foreach (var target in targets)
         {
-            target.isActive = true;
+            if (!target.isActive)
+            {
+                target.isActive = true;
 
-            int heals = (int)((character.magAtk * powerModifier * Random.Range(.85f, 1.25f)) / targets.Count);
+                int heals = (int)((character.magAtk * powerModifier * Random.Range(.85f, 1.25f)) / targets.Count);
 
-            target.currHP += heals;
+                if (heals > 9999) heals = 9999;
 
-            if (target.currHP > target.maxHP) target.currHP = target.maxHP;
+                target.currHP += heals;
 
-            result.Add(heals == 0 ? "Miss" : heals.ToString());
+                if (target.currHP > target.maxHP) target.currHP = target.maxHP;
+
+                result.Add(heals == 0 ? "Miss" : heals.ToString());
+            }
+            else
+                result.Add("Miss");
         }
 
         return result;
