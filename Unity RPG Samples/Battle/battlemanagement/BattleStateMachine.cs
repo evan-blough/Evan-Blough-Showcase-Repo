@@ -1,18 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.TextCore.Text;
 using UnityEngine.UI;
 public enum BattleStates
 {
     START, PLAYERTURN, ENEMYTURN, WIN, LOSS, FLEE, WAIT
 }
-public class BattleStateMachine: MonoBehaviour
+public class BattleStateMachine : MonoBehaviour
 {
-    GameManager gameManager;
+    SceneManager gameManager;
+    BattlePartyHandler partyHandler;
     public GameObject heroPrefab;
     public GameObject ogrePrefab;
     public GameObject wizardPrefab;
@@ -20,12 +18,6 @@ public class BattleStateMachine: MonoBehaviour
     public GameObject wolfPrefab;
     public BattleStationManager battleStationManager;
     public Button attackButton;
-
-    Hero heroUnit;
-    Wizard wizardUnit;
-    Senator senatorUnit;
-    Ogre ogreUnit;
-    Wolf wolfUnit;
 
     public UIHandler uiHandler;
 
@@ -43,7 +35,9 @@ public class BattleStateMachine: MonoBehaviour
     // Start is called before the first frame update
     public void Start()
     {
-        gameManager = GameManager.instance;
+        gameManager = SceneManager.instance;
+        StartCoroutine(gameManager.TransitionTime("Enter_Scene", .5f));
+        partyHandler = BattlePartyHandler.instance;
         uiHandler.OnStart();
         state = BattleStates.START;
         StartCoroutine(SetupBattle());
@@ -51,15 +45,15 @@ public class BattleStateMachine: MonoBehaviour
 
     public IEnumerator SetupBattle()
     {
+        GameObject prefab;
         int index = 0;
-        foreach (PlayerCharacterData characterData in gameManager.currentParty)
+        foreach (PlayerCharacterData characterData in partyHandler.partyData)
         {
-            GameObject prefab;
-            if (characterData.id == DataID.HERO)
+            if (characterData is HeroData)
                 prefab = heroPrefab;
-            else if (characterData.id == DataID.WIZARD)
+            else if (characterData is WizardData)
                 prefab = wizardPrefab;
-            else if (characterData.id == DataID.SENATOR)
+            else if (characterData is SenatorData)
                 prefab = senatorPrefab;
             else
                 continue;
@@ -70,13 +64,17 @@ public class BattleStateMachine: MonoBehaviour
             index++;
         }
 
-        ogreUnit = (Ogre)battleStationManager.SetStation(ogrePrefab, 3);
-        ogreUnit.rarity = Enemy.InitializeRarity();
-        enemies.Add(ogreUnit);
+        index = 3;
+        foreach (GameObject enemyPrefab in gameManager.enemyInBattle.encounterFormation)
+        {
+            if (index > 6) break;
 
-        wolfUnit = (Wolf)battleStationManager.SetStation(wolfPrefab, 4);
-        wolfUnit.rarity = Enemy.InitializeRarity();
-        enemies.Add(wolfUnit);
+            var enemyUnit = (Enemy)battleStationManager.SetStation(enemyPrefab, index);
+            enemyUnit.rarity = Enemy.InitializeRarity();
+            enemies.Add(enemyUnit);
+
+            index++;
+        }
 
         characterHUDList = dataHudHandler.CreateCharacterHuds(playerCharacterList);
         enemyHUDList = dataHudHandler.CreateEnemyHuds(enemies);
@@ -127,7 +125,7 @@ public class BattleStateMachine: MonoBehaviour
         currentCharacter = turnOrder.First();
         turnOrder.Remove(turnOrder[0]);
 
-        if (currentCharacter.currStatuses.Count > 0 )
+        if (currentCharacter.currStatuses.Count > 0)
             Statuses.HandleStatuses(currentCharacter, turnCounter);
 
         if (currentCharacter is PlayerCharacter)
@@ -165,13 +163,13 @@ public class BattleStateMachine: MonoBehaviour
         if (currentCharacter.currStatuses.Any(s => s.status == Status.BERSERK))
         {
             if (enemies.Count > 1)
-            StartCoroutine(PlayerAttack(enemies.Where(t => !t.isBackRow && t.isActive).ToList()[Random.Range(0, enemies.Count - 1)]));
+                StartCoroutine(PlayerAttack(enemies.Where(t => !t.isBackRow && t.isActive).ToList()[Random.Range(0, enemies.Count - 1)]));
             else
-            StartCoroutine(PlayerAttack(enemies.First()));
+                StartCoroutine(PlayerAttack(enemies.First()));
             return;
         }
         uiHandler.battleHUD.gameObject.SetActive(true);
-        attackButton.gameObject.SetActive(!currentCharacter.isBackRow); 
+        attackButton.gameObject.SetActive(!currentCharacter.isBackRow);
     }
     public IEnumerator PlayerAttack(Character target)
     {
@@ -187,7 +185,7 @@ public class BattleStateMachine: MonoBehaviour
 
         battleStationManager.SetText(string.Empty, target);
 
-        if(target.currHP <= 0) { target.isActive = false; }
+        if (target.currHP <= 0) { target.isActive = false; }
 
         yield return new WaitForSeconds(.75f);
 
@@ -199,19 +197,19 @@ public class BattleStateMachine: MonoBehaviour
         uiHandler.ResetUI();
         dataHudHandler.DeactivateEnemyHud();
 
-        if (state == BattleStates.LOSS )
+        if (state == BattleStates.LOSS)
         {
             uiHandler.OnLoss();
         }
-        else if (state == BattleStates.WIN )
+        else if (state == BattleStates.WIN)
         {
             uiHandler.OnWin(enemies, playerCharacterList);
-            StartCoroutine(gameManager.TransitionFromBattle(playerCharacterList));
+            StartCoroutine(gameManager.TransitionFromBattle(playerCharacterList, true));
         }
         else if (state == BattleStates.FLEE)
         {
             uiHandler.OnFlee(true);
-            StartCoroutine(gameManager.TransitionFromBattle(playerCharacterList));
+            StartCoroutine(gameManager.TransitionFromBattle(playerCharacterList, false));
         }
     }
     public IEnumerator EnemyTurn(Enemy currentEnemy)
@@ -232,7 +230,7 @@ public class BattleStateMachine: MonoBehaviour
         }
 
         yield return StartCoroutine(currentEnemy.EnemyTurn(playerCharacterList, enemies, turnCounter, battleStationManager, uiHandler.enemySkillUI));
-        
+
         state = BattleStates.WAIT;
         StartCoroutine(FindNextTurn());
     }
@@ -247,7 +245,7 @@ public class BattleStateMachine: MonoBehaviour
 
         bool fleeCheck = currentCharacter.FleeCheck(enemies.Where(e => e.isActive).OrderByDescending(c => c.agility).First(), turnCounter);
         uiHandler.fleeBox.SetFleeBox(fleeCheck);
-        
+
         if (fleeCheck)
         {
             state = BattleStates.FLEE;

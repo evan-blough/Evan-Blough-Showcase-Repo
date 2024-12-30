@@ -23,4 +23,25 @@ public class ControlsHandler : MonoBehaviour
     {
         if (playerControls is null) playerControls = new PlayerControls();
     }
+
+    public static void BattleToOverworld()
+    {
+
+    }
+
+    public static void OverworldToBattle()
+    {
+
+    }
+
+    public static void MenuToOverworld()
+    {
+        instance.playerControls.menu.Disable();
+        instance.playerControls.overworld.Enable();
+    }
+    public static void OverworldToMenu()
+    {
+        instance.playerControls.overworld.Disable();
+        instance.playerControls.menu.Enable();
+    }
 }

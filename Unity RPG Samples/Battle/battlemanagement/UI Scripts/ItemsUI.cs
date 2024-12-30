@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,17 +23,19 @@ public class ItemsUI : MonoBehaviour
 
         foreach (Items item in ((PlayerCharacter)bsm.currentCharacter).charInventory.items)
         {
-                items.Add(item);
-                GameObject tempButton = Instantiate(buttonPrefab);
-                tempButton.transform.SetParent(bsm.uiHandler.itemsUI.transform, false);
-                var i = tempButton.GetComponent<ItemButton>();
-                i.item = item;
-                i.uiHandler = bsm.uiHandler;
+            if (item is null) continue;
 
-                Button itemsButton = tempButton.GetComponentInChildren<Button>();
-                itemsButton.onClick.AddListener(() => OnItemButton(item));
-                Text tempText = tempButton.GetComponentInChildren<Text>();
-                tempText.text = item.itemName;
+            items.Add(item);
+            GameObject tempButton = Instantiate(buttonPrefab);
+            tempButton.transform.SetParent(bsm.uiHandler.itemsUI.transform, false);
+            var i = tempButton.GetComponent<ItemButton>();
+            i.item = item;
+            i.uiHandler = bsm.uiHandler;
+
+            Button itemsButton = tempButton.GetComponentInChildren<Button>();
+            itemsButton.onClick.AddListener(() => OnItemButton(item));
+            Text tempText = tempButton.GetComponentInChildren<Text>();
+            tempText.text = item.itemName;
         }
 
         bsm.uiHandler.itemsUI.gameObject.SetActive(true);

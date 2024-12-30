@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 [System.Serializable]
 public class PlayerCharacterData : CharacterData
 {
+    public Sprite portrait;
     public ExperienceHandler expHandler;
     public EquipmentWeight weightClass;
     public List<Skills> skills;

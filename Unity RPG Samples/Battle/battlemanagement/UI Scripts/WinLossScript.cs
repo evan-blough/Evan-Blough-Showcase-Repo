@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Xml.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,8 +20,7 @@ public class WinLossScript : MonoBehaviour
             goldGained += enemy.goldValue;
         }
 
-        GameManager gm = GameManager.instance;
-        gm.gold += goldGained;
+        BattlePartyHandler.instance.gold += goldGained;
         goldText.text = goldGained.ToString();
 
         for (int i = 0; i < 3; i++)
@@ -34,14 +31,14 @@ public class WinLossScript : MonoBehaviour
 
         foreach (PlayerCharacter character in playerCharacterList)
         {
-                characterNameText[index].text = character.unitName;
-                characterExpText[index].text = "0";
-                if (character.isActive)
-                {
-                    character.expHandler.AddExperience(character, expGained);
-                    characterExpText[index].text = expGained.ToString();
-                }
-            
+            characterNameText[index].text = character.unitName;
+            characterExpText[index].text = "0";
+            if (character.isActive)
+            {
+                character.expHandler.AddExperience(character, expGained);
+                characterExpText[index].text = expGained.ToString();
+            }
+
             index++;
         }
     }
