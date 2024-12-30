@@ -8,7 +8,8 @@ public class CircleMovement : NPCMovement
 
     private void Start()
     {
-        originalPoint = new Vector3(transform.position.x - movementRadius, transform.position.y, transform.position.z);
+        mainCamera = Camera.main;
+        originalPoint = new Vector3(transform.position.x - movementRadius, 0f, transform.position.z);
     }
 
     public override Vector2 GetMovementVector(Vector3 currentPos)

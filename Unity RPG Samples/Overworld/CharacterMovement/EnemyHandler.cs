@@ -13,6 +13,7 @@ public class EnemyHandler : NonPlayerCharacterHandler
     private void Start()
     {
         cam = SceneManager.instance.cam.transform;
+        mainCamera = Camera.main;
         state = EnemyState.INITALIZING;
         StartCoroutine(WaitToStart());
     }
@@ -63,7 +64,6 @@ public class EnemyHandler : NonPlayerCharacterHandler
         float speed = state == EnemyState.CHASING ? currentSpeed * 1.5f : currentSpeed;
 
         controller.Move(moveDir.normalized * speed * Time.deltaTime);
-        runDirection = directionMultiplier * Vector3.Angle(moveDir, Camera.main.transform.forward);
     }
 
     protected override IEnumerator WaitToStart()

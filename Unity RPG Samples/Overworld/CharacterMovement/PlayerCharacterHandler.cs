@@ -34,6 +34,7 @@ public class PlayerCharacterHandler : CharacterHandler
     private void Start()
     {
         cam = SceneManager.instance.cam.transform;
+        mainCamera = Camera.main;
     }
 
     // Update is called once per frame
@@ -66,7 +67,7 @@ public class PlayerCharacterHandler : CharacterHandler
     public override void VerticalMovement()
     {
         //jump
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+        isGrounded = Physics.Raycast(transform.position, Vector3.down, groundDistance, groundMask);
 
         if (isGrounded && velocity.y < 0)
         {
@@ -76,8 +77,10 @@ public class PlayerCharacterHandler : CharacterHandler
         {
             velocity.y += Physics2D.gravity.y * (fallMultiplier - 1.5f) * Time.deltaTime;
         }
+
         //gravity
         velocity.y += gravity * Time.deltaTime;
+
         controller.Move(velocity * Time.deltaTime);
     }
 
@@ -119,8 +122,8 @@ public class PlayerCharacterHandler : CharacterHandler
             }
 
             // need position relative to main camera in world space to adjust for rotation
-            leaderPosition = Camera.main.transform.InverseTransformPoint(leaderPosition);
-            Vector3 posRelToCam = Camera.main.transform.InverseTransformPoint(transform.position);
+            leaderPosition = mainCamera.transform.InverseTransformPoint(leaderPosition);
+            Vector3 posRelToCam = mainCamera.transform.InverseTransformPoint(transform.position);
 
 
             if (Vector3.Distance(leaderPosition, posRelToCam) < followDistance)
@@ -194,21 +197,8 @@ public class PlayerCharacterHandler : CharacterHandler
                 animator.SetBool("Jumping", true);
             else if (state == CharacterState.FALLING)
                 animator.SetBool("Falling", true);
-
-            animDirection = GetDirection(runDirection);
-            animator.SetFloat("Direction", animDirection);
         }
-        else
-        {
-            var angleDif = CameraHandler.AngleNormalization(sprite.transform.eulerAngles.y);
-
-            animDirection = GetDirection(transform.eulerAngles.y - angleDif);
-            animator.SetFloat("Direction", animDirection);
-        }
-        if (animDirection <= 7 && animDirection >= 5)
-            sprite.flipX = true;
-        else
-            sprite.flipX = false;
+        base.AnimationStateCheck();
     }
 
     public void OnEnable()

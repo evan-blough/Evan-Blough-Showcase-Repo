@@ -4,7 +4,6 @@ using UnityEngine;
 public class CameraHandler : MonoBehaviour
 {
     PlayerControls controls;
-
     public CinemachineFreeLook cam;
     public float targetRotation;
     public float currentRotation;

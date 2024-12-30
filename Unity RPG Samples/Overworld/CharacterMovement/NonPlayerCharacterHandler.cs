@@ -9,6 +9,7 @@ public class NonPlayerCharacterHandler : CharacterHandler
     private void Start()
     {
         cam = SceneManager.instance.cam.transform;
+        mainCamera = Camera.main;
     }
 
 
@@ -45,7 +46,6 @@ public class NonPlayerCharacterHandler : CharacterHandler
         animator.SetFloat("Speed", currentSpeed / 11);
 
         controller.Move(moveDir.normalized * currentSpeed * Time.deltaTime);
-        runDirection = directionMultiplier * Vector3.Angle(moveDir, Camera.main.transform.forward);
     }
 
     protected virtual void OnTriggerEnter(Collider other)

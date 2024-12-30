@@ -6,6 +6,7 @@ public class BasicMovement : NPCMovement
 
     private void Start()
     {
+        mainCamera = Camera.main;
         originalPoint = transform.position;
     }
 
