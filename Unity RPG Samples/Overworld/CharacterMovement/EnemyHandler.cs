@@ -15,7 +15,7 @@ public class EnemyHandler : NonPlayerCharacterHandler
         cam = SceneManager.instance.cam.transform;
         mainCamera = Camera.main;
         state = EnemyState.INITALIZING;
-        StartCoroutine(WaitToStart());
+        StartCoroutine(WaitToStart(1.5f));
     }
 
     private void Update()
@@ -66,9 +66,9 @@ public class EnemyHandler : NonPlayerCharacterHandler
         controller.Move(moveDir.normalized * speed * Time.deltaTime);
     }
 
-    protected override IEnumerator WaitToStart()
+    protected override IEnumerator WaitToStart(float waitTime)
     {
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(waitTime);
 
         isActive = true;
         movement.canMove = true;

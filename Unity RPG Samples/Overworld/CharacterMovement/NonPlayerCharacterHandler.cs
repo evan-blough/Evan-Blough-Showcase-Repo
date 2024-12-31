@@ -10,6 +10,7 @@ public class NonPlayerCharacterHandler : CharacterHandler
     {
         cam = SceneManager.instance.cam.transform;
         mainCamera = Camera.main;
+        StartCoroutine(WaitToStart(2f));
     }
 
 
@@ -22,7 +23,7 @@ public class NonPlayerCharacterHandler : CharacterHandler
         AnimationStateCheck();
     }
 
-    protected virtual IEnumerator WaitToStart()
+    protected virtual IEnumerator WaitToStart(float waitTime)
     {
         yield return new WaitForSeconds(2f);
         isActive = true;
@@ -58,12 +59,13 @@ public class NonPlayerCharacterHandler : CharacterHandler
 
     protected void OnEnable()
     {
-        StartCoroutine(WaitToStart());
+        StartCoroutine(WaitToStart(.5f));
     }
 
     protected void OnDisable()
     {
         isActive = false;
-        move = Vector2.zero;
+        movement.isMoving = false;
+        movement.canMove = false;
     }
 }
