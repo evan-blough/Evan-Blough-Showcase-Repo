@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization.Json;
 using UnityEngine;
 
 public class PlayerCharacter : Character
 {
     public ExperienceHandler expHandler;
     public EquipmentWeight weightClass;
-    public List<Skills> skills;
+    public List<Skill> skills;
+    public List<Skill> equippedSkills;
     public BattleInventory charInventory;
     public Weapon weapon;
     public Armor armor;
@@ -21,13 +21,13 @@ public class PlayerCharacter : Character
         expHandler.UpdateLevel(this);
     }
 
-    public override int attack 
-    { 
-        get 
+    public override int attack
+    {
+        get
         {
-            return strength + (weapon is null ? 0 : weapon.attackBuff) + (armor is null ? 0 : armor.attackBuff) 
-                + (accessory1 is null ? 0 : accessory1.attackBuff) + (accessory2 is null ? 0 : accessory2.attackBuff); 
-        } 
+            return strength + (weapon is null ? 0 : weapon.attackBuff) + (armor is null ? 0 : armor.attackBuff)
+                + (accessory1 is null ? 0 : accessory1.attackBuff) + (accessory2 is null ? 0 : accessory2.attackBuff);
+        }
     }
 
     public override int defense
@@ -64,15 +64,15 @@ public class PlayerCharacter : Character
                 + (accessory1 is null ? 0 : accessory1.agilityBuff) + (accessory2 is null ? 0 : accessory2.agilityBuff);
         }
     }
-    public override List<Status> resistances 
-    { 
-        get 
+    public override List<Status> resistances
+    {
+        get
         {
             var statusList = new List<Status>();
             if (accessory1 is not null) statusList.AddRange(accessory1.statusResistances);
             if (accessory2 is not null) statusList.AddRange(accessory2.statusResistances);
-            return statusList; 
-        } 
+            return statusList;
+        }
     }
     public override List<Status> immunities
     {
@@ -121,7 +121,7 @@ public class PlayerCharacter : Character
         if (hitChance >= UnityEngine.Random.Range(0, 100))
         {
             int criticalValue = UnityEngine.Random.Range(1, 20) == 20 ? 2 : 1;
-            int damage = (int)((attack * 
+            int damage = (int)((attack *
                 FindPhysicalAttackStatusModifier() * UnityEngine.Random.Range(1f, 1.25f) * criticalValue) - enemy.defense);
 
             damage = (int)(damage * enemy.FindPhysicalDamageStatusModifier());
@@ -185,7 +185,8 @@ public class PlayerCharacter : Character
         expHandler = pc.expHandler;
         weightClass = pc.weightClass;
         charInventory = pc.charInventory;
-        skills = pc.skills.ConvertAll(x => new Skills(x)).ToList();
+        skills = pc.skills;
+        equippedSkills = pc.equippedSkills;
         weapon = pc.weapon;
         armor = pc.armor;
         accessory1 = pc.accessory1;
@@ -194,17 +195,17 @@ public class PlayerCharacter : Character
         exp = pc.exp;
     }
 
-    public string EquipSkill(Skills skill)
+    public string EquipSkill(Skill skill)
     {
-        if (skills.Count == 12) return "You've equipped the max amount of skills: remove a skill first!";
+        if (equippedSkills.Count == 12) return "You've equipped the max amount of skills: remove a skill first!";
 
-        skill.isEquipped = true;
+        equippedSkills.Add(skill);
         return $"Equipped {skill.skillName}";
     }
 
-    public string UnequipSkill(Skills skill)
+    public string UnequipSkill(Skill skill)
     {
-        skill.isEquipped = false;
+        equippedSkills.Remove(skill);
         return $"Unequipped {skill.skillName}";
     }
 }

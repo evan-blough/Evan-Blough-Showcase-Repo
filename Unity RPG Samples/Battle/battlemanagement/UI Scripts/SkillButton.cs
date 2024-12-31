@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 public class SkillButton : MonoBehaviour
 {
     public Button button;
-    public Skills skill;
+    public Skill skill;
     public PlayerCharacter currentCharacter;
     public UIHandler uiHandler;
 

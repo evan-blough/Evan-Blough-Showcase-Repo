@@ -1,8 +1,5 @@
-using NUnit.Framework.Constraints;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Properties;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -43,7 +40,7 @@ public class TargetingUI : MonoBehaviour
         }
         else if (itemsUI.currentItem != null)
         {
-            StartCoroutine (itemsUI.OnTargetSelected(targets));
+            StartCoroutine(itemsUI.OnTargetSelected(targets));
             return;
         }
 
@@ -70,14 +67,14 @@ public class TargetingUI : MonoBehaviour
 
         for (int i = 0; i < enemyButtons.Length && i < enemies.Length; ++i)
         {
-            if (enemies[i].enemy.isActive && (enemies.Where(e => e.enemy.isActive).ToList().Count == enemies.Where(e => e.enemy.isBackRow).ToList().Count 
+            if (enemies[i].enemy.isActive && (enemies.Where(e => e.enemy.isActive).ToList().Count == enemies.Where(e => e.enemy.isBackRow).ToList().Count
                                             || !enemies[i].enemy.isBackRow))
                 enemyButtons[i].interactable = true;
         }
     }
 
     // activating targets for a skill
-    public void ActivateTargets(Skills skill, Character character)
+    public void ActivateTargets(Skill skill, Character character)
     {
         var buttons = allHeroes.GetComponentsInChildren<Button>().Where(b => b != allHeroes).ToArray();
         var characters = allHeroes.GetComponentsInChildren<CharacterHUD>();
@@ -85,7 +82,7 @@ public class TargetingUI : MonoBehaviour
         var enemyButtons = allEnemies.GetComponentsInChildren<Button>().Where(b => b != allEnemies).ToArray();
         var enemies = allEnemies.GetComponentsInChildren<EnemyHUD>();
 
-        if (skill.type == SkillType.REVIVE)
+        if (skill is RevivalSkill)
         {
             if (skill.isMultiTargeted)
             {
@@ -133,7 +130,7 @@ public class TargetingUI : MonoBehaviour
 
             for (int i = 0; i < enemyButtons.Length && i < enemies.Length; ++i)
             {
-                 if (enemies[i].enemy.isActive)
+                if (enemies[i].enemy.isActive)
                     enemyButtons[i].interactable = true;
             }
         }
@@ -186,7 +183,7 @@ public class TargetingUI : MonoBehaviour
                         buttons[i].interactable = true;
                 }
                 for (int i = 0; i < enemies.Length && i < enemyButtons.Length; ++i)
-                { 
+                {
                     if (!enemies[i].enemy.isActive)
                         enemyButtons[i].interactable = true;
                 }

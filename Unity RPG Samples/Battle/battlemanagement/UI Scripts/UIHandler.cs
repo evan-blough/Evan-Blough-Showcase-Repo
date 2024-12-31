@@ -101,7 +101,7 @@ public class UIHandler : MonoBehaviour
         itemDescriptionBox.gameObject.SetActive(false);
     }
 
-    public void SetSkillDetails(Skills skill, string currSP)
+    public void SetSkillDetails(Skill skill, string currSP)
     {
         costBox.SetCostBox(skill.skillPointCost.ToString(), currSP);
         skillDescriptionBox.SetDescription(skill.skillDescription);

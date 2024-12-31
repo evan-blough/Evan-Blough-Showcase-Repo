@@ -6,49 +6,52 @@ public class SkillsHUD : MonoBehaviour
 {
     public GameObject buttonPrefab;
     public BattleStateMachine bsm;
-    public Skills currentSkill;
+    public Skill currentSkill;
     public DescriptionBox descriptionBox;
     public CostBox costBox;
+    Character currentCharacter;
+    public int turnCounter;
     public void CallSkillsHUD()
     {
         bsm.uiHandler.UIOnSkills();
 
-        List<Skills> skills = new List<Skills>();   
+        currentCharacter = bsm.currentCharacter;
+        turnCounter = bsm.turnCounter;
+
+        List<Skill> skills = new List<Skill>();
 
         foreach (Transform child in bsm.uiHandler.skillHUD.transform)
         {
             Destroy(child.gameObject);
         }
 
-        foreach (Skills skill in ((PlayerCharacter)bsm.currentCharacter).skills)
+        foreach (Skill skill in ((PlayerCharacter)currentCharacter).equippedSkills)
         {
-            if (skill.levelReq <= bsm.currentCharacter.level && skill.active && skill.isEquipped)
-            {
-                skills.Add(skill);
-                GameObject tempButton = Instantiate(buttonPrefab);
-                tempButton.transform.SetParent(bsm.uiHandler.skillHUD.transform, false);
-                var s = tempButton.GetComponent<SkillButton>();
-                s.skill = skill;
-                s.currentCharacter = (PlayerCharacter)bsm.currentCharacter;
-                s.uiHandler = bsm.uiHandler;
+            skills.Add(skill);
+            GameObject tempButton = Instantiate(buttonPrefab);
+            tempButton.transform.SetParent(bsm.uiHandler.skillHUD.transform, false);
+            var s = tempButton.GetComponent<SkillButton>();
+            s.skill = skill;
+            s.currentCharacter = (PlayerCharacter)currentCharacter;
+            s.uiHandler = bsm.uiHandler;
 
-                Button skillButton = tempButton.GetComponentInChildren<Button>();
-                skillButton.onClick.AddListener(() => OnSkillButton(skill));
-                Text tempText = tempButton.GetComponentInChildren<Text>();
-                tempText.text = skill.skillName;
+            Button skillButton = tempButton.GetComponentInChildren<Button>();
+            skillButton.onClick.AddListener(() => OnSkillButton(skill));
+            Text tempText = tempButton.GetComponentInChildren<Text>();
+            tempText.text = skill.skillName;
 
-                if ((!skill.isRanged && bsm.currentCharacter.isBackRow) || skill.skillPointCost > bsm.currentCharacter.currSP) skillButton.interactable = false;
-            }
+            if ((!skill.isRanged && currentCharacter.isBackRow) || skill.skillPointCost > currentCharacter.currSP) skillButton.interactable = false;
+
         }
 
         bsm.uiHandler.skillHUD.gameObject.SetActive(true);
 
     }
 
-    public void OnSkillButton(Skills skill)
+    public void OnSkillButton(Skill skill)
     {
         currentSkill = skill;
-        bsm.uiHandler.targetingUI.ActivateTargets(skill, bsm.currentCharacter);
+        bsm.uiHandler.targetingUI.ActivateTargets(skill, currentCharacter);
     }
 
     public IEnumerator OnTargetSelected(List<Character> targets)
@@ -56,44 +59,28 @@ public class SkillsHUD : MonoBehaviour
         List<string> returns;
         bsm.uiHandler.ResetUI();
 
-        bsm.currentCharacter.currSP -= currentSkill.skillPointCost;
-        switch (currentSkill.type)
-        {
-            case SkillType.ATTACK:
-                returns = currentSkill.UseAttackingSkill((PlayerCharacter)bsm.currentCharacter, targets, bsm.turnCounter);
-                break;
-            case SkillType.HEAL:
-                returns = currentSkill.UseHealingSkill((PlayerCharacter)bsm.currentCharacter, targets, bsm.turnCounter);
-                break;
-            case SkillType.REVIVE:
-                returns = currentSkill.UseRevivalSkill((PlayerCharacter)bsm.currentCharacter, targets, bsm.turnCounter);
-                break;
-            case SkillType.STATUS:
-                returns = currentSkill.HandleStatusApplication((PlayerCharacter)bsm.currentCharacter, targets, bsm.turnCounter);
-                break;
-            default:
-                returns = currentSkill.UseMixedSkill((PlayerCharacter)bsm.currentCharacter, targets, bsm.turnCounter);
-                break;
-        }
-        yield return StartCoroutine(ApplyDamage(targets, returns, currentSkill.type));
+        currentCharacter.currSP -= currentSkill.skillPointCost;
+
+        returns = currentSkill.UseSkill(currentCharacter, targets, turnCounter);
+
+        yield return StartCoroutine(ApplyDamage(targets, returns));
         currentSkill = null;
-        
         StartCoroutine(bsm.FindNextTurn());
     }
 
-    public IEnumerator ApplyDamage(List<Character> targets, List<string> returns, SkillType type)
+    public IEnumerator ApplyDamage(List<Character> targets, List<string> returns)
     {
-        HandleSkillText(targets, returns, type);
+        HandleSkillText(targets, returns, (currentSkill is HealingSkill || currentSkill is RevivalSkill));
         yield return new WaitForSeconds(.55f);
 
         for (int i = 0; i < returns.Count; i++) returns[i] = string.Empty;
-        HandleSkillText(targets, returns, SkillType.ATTACK);
+        HandleSkillText(targets, returns, false);
         yield return new WaitForSeconds(.75f);
     }
 
-    public void HandleSkillText(List<Character> target, List<string> text, SkillType type)
+    public void HandleSkillText(List<Character> target, List<string> text, bool isHealing)
     {
-        Color color = ((type == SkillType.HEAL || type == SkillType.REVIVE) ? Color.green : Color.white);
+        Color color = isHealing ? Color.green : Color.white;
 
         bsm.battleStationManager.SetTextColor(color);
 
