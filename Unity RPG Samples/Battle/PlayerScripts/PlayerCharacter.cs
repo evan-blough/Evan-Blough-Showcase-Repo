@@ -5,9 +5,14 @@ using UnityEngine;
 public class PlayerCharacter : Character
 {
     public ExperienceHandler expHandler;
+    public ClassExpHandler classExpHandler;
     public EquipmentWeight weightClass;
     public List<Skill> skills;
     public List<Skill> equippedSkills;
+    public List<Class> classes;
+    [SerializeReference]
+    public Class currClass;
+    public int excessClassPoints = 0;
     public BattleInventory charInventory;
     public Weapon weapon;
     public Armor armor;
@@ -15,55 +20,40 @@ public class PlayerCharacter : Character
     public Accessory accessory2;
     public bool isInParty;
     public int exp;
+    public int skillCount = 12;
 
     private void Start()
     {
         expHandler.UpdateLevel(this);
-    }
-
-    public override int attack
-    {
-        get
+        if (!classes.Contains(currClass))
         {
-            return strength + (weapon is null ? 0 : weapon.attackBuff) + (armor is null ? 0 : armor.attackBuff)
-                + (accessory1 is null ? 0 : accessory1.attackBuff) + (accessory2 is null ? 0 : accessory2.attackBuff);
+            currClass = classes.Any() ? classes.First() : null;
         }
     }
 
-    public override int defense
-    {
-        get
-        {
-            return constitution + (weapon is null ? 0 : weapon.defenseBuff) + (armor is null ? 0 : armor.defenseBuff)
-                + (accessory1 is null ? 0 : accessory1.defenseBuff) + (accessory2 is null ? 0 : accessory2.defenseBuff);
-        }
-    }
+    public override int attack => strength + (weapon is null ? 0 : weapon.attackBuff) + (armor is null ? 0 : armor.attackBuff)
+                + (accessory1 is null ? 0 : accessory1.attackBuff) + (accessory2 is null ? 0 : accessory2.attackBuff)
+                + (currClass is null ? 0 : currClass.classAtkMod);
 
-    public override int magAtk
-    {
-        get
-        {
-            return intelligence + (weapon is null ? 0 : weapon.magicAttackBuff) + (armor is null ? 0 : armor.magicAttackBuff)
-                + (accessory1 is null ? 0 : accessory1.magicAttackBuff) + (accessory2 is null ? 0 : accessory2.magicAttackBuff);
-        }
-    }
+    public override int defense => constitution + (weapon is null ? 0 : weapon.defenseBuff) + (armor is null ? 0 : armor.defenseBuff)
+                + (accessory1 is null ? 0 : accessory1.defenseBuff) + (accessory2 is null ? 0 : accessory2.defenseBuff)
+                + (currClass is null ? 0 : currClass.classDefMod);
 
-    public override int magDef
-    {
-        get
-        {
-            return spirit + (weapon is null ? 0 : weapon.magicDefenseBuff) + (armor is null ? 0 : armor.magicDefenseBuff)
-                + (accessory1 is null ? 0 : accessory1.magicDefenseBuff) + (accessory2 is null ? 0 : accessory2.magicDefenseBuff);
-        }
-    }
-    public override int agility
-    {
-        get
-        {
-            return speed + (weapon is null ? 0 : weapon.agilityBuff) + (armor is null ? 0 : armor.agilityBuff)
-                + (accessory1 is null ? 0 : accessory1.agilityBuff) + (accessory2 is null ? 0 : accessory2.agilityBuff);
-        }
-    }
+    public override int magAtk => intelligence + (weapon is null ? 0 : weapon.magicAttackBuff) + (armor is null ? 0 : armor.magicAttackBuff)
+                + (accessory1 is null ? 0 : accessory1.magicAttackBuff) + (accessory2 is null ? 0 : accessory2.magicAttackBuff)
+                + (currClass is null ? 0 : currClass.classMgAtkMod);
+
+    public override int magDef => spirit + (weapon is null ? 0 : weapon.magicDefenseBuff) + (armor is null ? 0 : armor.magicDefenseBuff)
+                + (accessory1 is null ? 0 : accessory1.magicDefenseBuff) + (accessory2 is null ? 0 : accessory2.magicDefenseBuff)
+                + (currClass is null ? 0 : currClass.classMgDefMod);
+    public override int agility => speed + (weapon is null ? 0 : weapon.agilityBuff) + (armor is null ? 0 : armor.agilityBuff)
+                + (accessory1 is null ? 0 : accessory1.agilityBuff) + (accessory2 is null ? 0 : accessory2.agilityBuff)
+                + (currClass is null ? 0 : currClass.classAgilityMod);
+
+    public override int hitPercent => 100 + (weapon is null ? 0 : weapon.accuracyMod);
+    public override int dodgePercent => 0 + (armor is null ? 0 : armor.accuracyMod) + (accessory1 is null ? 0 : accessory1.accuracyMod)
+        + (accessory2 is null ? 0 : accessory2.accuracyMod);
+
     public override List<Status> resistances
     {
         get
@@ -113,8 +103,7 @@ public class PlayerCharacter : Character
     }
     public override int Attack(Character enemy, int turnCounter)
     {
-        double enemyAgility = enemy.agility;
-        double hitChance = ((agility / enemyAgility) + .01) * 100;
+        double hitChance = hitPercent - enemy.dodgePercent;
 
         if (weapon is not null && weapon.element != Elements.NONE && enemy.elemAbsorptions.Where(e => e == weapon.element).Any()) { return -1; }
 
@@ -183,21 +172,26 @@ public class PlayerCharacter : Character
 
         base.DeepCopyFrom(c);
         expHandler = pc.expHandler;
+        classExpHandler = pc.classExpHandler;
         weightClass = pc.weightClass;
         charInventory = pc.charInventory;
         skills = pc.skills;
         equippedSkills = pc.equippedSkills;
+        classes = pc.classes;
+        currClass = pc.equippedClass;
         weapon = pc.weapon;
         armor = pc.armor;
         accessory1 = pc.accessory1;
         accessory2 = pc.accessory2;
         isInParty = pc.isInParty;
         exp = pc.exp;
+        skillCount = pc.skillCount;
+        excessClassPoints = pc.excessClassPoints;
     }
 
     public string EquipSkill(Skill skill)
     {
-        if (equippedSkills.Count == 12) return "You've equipped the max amount of skills: remove a skill first!";
+        if (equippedSkills.Count == skillCount) return "You've equipped the max amount of skills: remove a skill first!";
 
         equippedSkills.Add(skill);
         return $"Equipped {skill.skillName}";
@@ -207,5 +201,21 @@ public class PlayerCharacter : Character
     {
         equippedSkills.Remove(skill);
         return $"Unequipped {skill.skillName}";
+    }
+
+    public void AutoUpdateCurrentClass()
+    {
+        // pick the first class that hasn't been maxed. If all classes have been maxed, do nothing as there is nothing to do.
+        for (int i = 0; i < classes.Count; i++)
+        {
+            if (!classes[i].isMaxed)
+            {
+                currClass = classes[i];
+                classExpHandler.nextLevelExp = currClass.classSlot.levels[currClass.classLevel - 1].expNeeded;
+                break;
+            }
+        }
+
+
     }
 }

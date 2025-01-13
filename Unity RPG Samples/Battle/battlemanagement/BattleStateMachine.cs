@@ -11,6 +11,7 @@ public class BattleStateMachine : MonoBehaviour
 {
     SceneManager gameManager;
     BattlePartyHandler partyHandler;
+    public AudioClip victory;
     public GameObject heroPrefab;
     public GameObject ogrePrefab;
     public GameObject wizardPrefab;
@@ -146,9 +147,9 @@ public class BattleStateMachine : MonoBehaviour
 
     public void PlayerTurn()
     {
-        if (currentCharacter.currStatuses.Any(s => s.status == Status.POISONED)) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 16);
-        if (currentCharacter.currStatuses.Any(s => s.status == Status.BLEED)) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 10);
-        if (currentCharacter.currStatuses.Any(s => s.status == Status.PARALYZED))
+        if (currentCharacter.currStatuses.Any(s => s.status == Status.Poisoned)) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 16);
+        if (currentCharacter.currStatuses.Any(s => s.status == Status.Bleeding)) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 10);
+        if (currentCharacter.currStatuses.Any(s => s.status == Status.Paralyzed))
         {
             StartCoroutine(FindNextTurn());
             return;
@@ -160,10 +161,19 @@ public class BattleStateMachine : MonoBehaviour
             StartCoroutine(FindNextTurn());
             return;
         }
-        if (currentCharacter.currStatuses.Any(s => s.status == Status.BERSERK))
+        if (currentCharacter.currStatuses.Any(s => s.status == Status.Berserk))
         {
             if (enemies.Count > 1)
-                StartCoroutine(PlayerAttack(enemies.Where(t => !t.isBackRow && t.isActive).ToList()[Random.Range(0, enemies.Count - 1)]));
+            {
+                List<Enemy> targets = enemies.Where(e => e.isActive).ToList()
+                    ;
+                if (targets.Where(e => !e.isBackRow).Any())
+                {
+                    targets = targets.Where(e => !e.isBackRow).ToList();
+                }
+
+                StartCoroutine(PlayerAttack(targets[Random.Range(0, targets.Count - 1)]));
+            }
             else
                 StartCoroutine(PlayerAttack(enemies.First()));
             return;
@@ -204,6 +214,7 @@ public class BattleStateMachine : MonoBehaviour
         else if (state == BattleStates.WIN)
         {
             uiHandler.OnWin(enemies, playerCharacterList);
+            AudioManager.instance.ChangeAudio(victory);
             StartCoroutine(gameManager.TransitionFromBattle(playerCharacterList, true));
         }
         else if (state == BattleStates.FLEE)
@@ -214,9 +225,9 @@ public class BattleStateMachine : MonoBehaviour
     }
     public IEnumerator EnemyTurn(Enemy currentEnemy)
     {
-        if (currentCharacter.currStatuses.Any(s => s.status == Status.POISONED)) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 16);
-        if (currentCharacter.currStatuses.Any(s => s.status == Status.BLEED)) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 10);
-        if (currentCharacter.currStatuses.Any(s => s.status == Status.PARALYZED))
+        if (currentCharacter.currStatuses.Any(s => s.status == Status.Poisoned)) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 16);
+        if (currentCharacter.currStatuses.Any(s => s.status == Status.Bleeding)) currentCharacter.currHP -= (int)(currentCharacter.maxHP / 10);
+        if (currentCharacter.currStatuses.Any(s => s.status == Status.Paralyzed))
         {
             StartCoroutine(FindNextTurn());
             yield break;
@@ -236,7 +247,7 @@ public class BattleStateMachine : MonoBehaviour
     }
     public void OnAttackButton()
     {
-        uiHandler.UIOnAttack(currentCharacter);
+        uiHandler.UIOnAttack();
     }
 
     public void OnFleeButton()

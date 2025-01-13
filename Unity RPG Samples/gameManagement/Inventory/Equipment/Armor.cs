@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Armor")]
+[CreateAssetMenu(fileName = "New Armor", menuName = "Equipment/Armor")]
 public class Armor : Equipment
 {
     public List<Elements> elemResists;

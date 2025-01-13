@@ -63,16 +63,16 @@ public class Wolf : Enemy
         {
             if (Random.Range(1, 100) >= 50)
             {
-                if (target.currStatuses.Where(s => s.status == Status.BLEED).Any())
+                if (target.currStatuses.Where(s => s.status == Status.Bleeding).Any())
                 {
-                    Statuses status = new Statuses(target.currStatuses.Where(s => s.status == Status.BLEED).First());
-                    target.currStatuses.RemoveAll(s => s.status == Status.BLEED);
+                    Statuses status = new Statuses(target.currStatuses.Where(s => s.status == Status.Bleeding).First());
+                    target.currStatuses.RemoveAll(s => s.status == Status.Bleeding);
                     status.expirationTurn += 3;
                     target.currStatuses.Add(status);
                 }
                 else
                 {
-                    Statuses status = new Statuses(Status.BLEED, 3, true, .5f);
+                    Statuses status = new Statuses(Status.Bleeding, 3, true, .5f);
                 }
             }
 

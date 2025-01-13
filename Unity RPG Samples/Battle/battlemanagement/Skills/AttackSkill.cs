@@ -3,22 +3,26 @@ using System.Linq;
 using UnityEngine;
 
 [System.Serializable]
-[CreateAssetMenu(fileName = "New Attacking Skill")]
+[CreateAssetMenu(fileName = "New Attacking Skill", menuName = "Skills/Attack Skill")]
 public class AttackSkill : Skill
 {
     public override List<string> UseSkill(Character character, List<Character> targets, int turnCounter)
     {
         List<string> returnDamages = new List<string>();
         double hitCheck;
-        double charAgility = character.agility, enemyAgility;
 
         foreach (var target in targets)
         {
+            if (!target.isActive)
+            {
+                returnDamages.Add("");
+                continue;
+            }
+
             if (target.elemAbsorptions.Where(e => e == elemAttribute).Any()) { returnDamages.Add("Immune"); }
             else
             {
-                enemyAgility = target.agility;
-                hitCheck = (((charAgility / enemyAgility) * accuracyModifier) + .01) * 100;
+                hitCheck = character.hitPercent - target.dodgePercent;
                 if (hitCheck >= Random.Range(0, 100))
                 {
                     foreach (var status in applyTargetStatuses) TargetStatusApplication(character, status, target, turnCounter);

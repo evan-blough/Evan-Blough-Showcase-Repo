@@ -51,7 +51,7 @@ public class SkillsHUD : MonoBehaviour
     public void OnSkillButton(Skill skill)
     {
         currentSkill = skill;
-        bsm.uiHandler.targetingUI.ActivateTargets(skill, currentCharacter);
+        bsm.uiHandler.targetingUI.ActivateTargets(skill);
     }
 
     public IEnumerator OnTargetSelected(List<Character> targets)

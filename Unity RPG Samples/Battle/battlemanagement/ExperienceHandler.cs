@@ -1,14 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 [System.Serializable]
 public class ExperienceHandler
 {
     public AnimationCurve experienceCurve;
     int nextLevelExp, prevLevelExp;
-    
+
 
     public void AddExperience(PlayerCharacter character, int amount)
     {

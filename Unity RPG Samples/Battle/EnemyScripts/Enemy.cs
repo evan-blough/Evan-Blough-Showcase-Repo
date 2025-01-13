@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-public enum Rarity{ COMMON, UNCOMMON, RARE, LEGENDARY }
+public enum Rarity { COMMON, UNCOMMON, RARE, LEGENDARY }
 public class Enemy : Character
 {
     public Elements atkElement;
@@ -14,6 +14,7 @@ public class Enemy : Character
     public List<Elements> enemyElemWeakness;
     public int expValue;
     public int goldValue;
+    public int classXpValue;
     public Rarity rarity;
     public override List<Status> resistances { get { return enemyStatusResists; } }
     public override List<Status> immunities { get { return enemyStatusAbsorb; } }
@@ -81,7 +82,7 @@ public class Enemy : Character
         int damage = this.Attack(targetUnit, turnCounter);
 
         if (targetUnit.currHP < 0) { targetUnit.currHP = 0; }
-        
+
         return damage;
     }
 
@@ -111,11 +112,11 @@ public class Enemy : Character
 
         if (characters.Count == 1) return characters.First();
 
-        if (characters.Where(c => c.currHP < (.25*c.maxHP)).Count() > 0)
+        if (characters.Where(c => c.currHP < (.25 * c.maxHP)).Count() > 0)
         {
-            target = characters.Where(c => c.currHP < (.25*c.maxHP)).ToList();
+            target = characters.Where(c => c.currHP < (.25 * c.maxHP)).ToList();
 
-            if (target.Where(c => !c.isBackRow).Count() > 0) 
+            if (target.Where(c => !c.isBackRow).Count() > 0)
             {
                 target = target.Where(c => !c.isBackRow).ToList();
                 int random = UnityEngine.Random.Range(0, target.Count() - 1);

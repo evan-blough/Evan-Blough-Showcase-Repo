@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,11 +26,11 @@ public class BattleStationManager : MonoBehaviour
         switch (station)
         {
             case 0:
-               thisChar = Instantiate(prefab, topBattleStation);
-               break;
+                thisChar = Instantiate(prefab, topBattleStation);
+                break;
             case 1:
-               thisChar = Instantiate(prefab, bottomBattleStation);
-               break;
+                thisChar = Instantiate(prefab, bottomBattleStation);
+                break;
             case 2:
                 thisChar = Instantiate(prefab, backBattleStation);
                 break;

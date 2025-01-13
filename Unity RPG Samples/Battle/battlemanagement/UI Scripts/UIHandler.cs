@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -62,7 +61,7 @@ public class UIHandler : MonoBehaviour
         fleeBox.gameObject.SetActive(state);
     }
 
-    public void UIOnAttack(Character currentCharacter)
+    public void UIOnAttack()
     {
         commandHUD.gameObject.SetActive(false);
         itemsUI.gameObject.SetActive(false);
@@ -70,7 +69,7 @@ public class UIHandler : MonoBehaviour
         costBox.gameObject.SetActive(false);
         skillDescriptionBox.gameObject.SetActive(false);
         itemDescriptionBox.gameObject.SetActive(false);
-        targetingUI.ActivateTargets(currentCharacter);
+        targetingUI.ActivateTargets();
     }
 
     public void UIOnSkills()

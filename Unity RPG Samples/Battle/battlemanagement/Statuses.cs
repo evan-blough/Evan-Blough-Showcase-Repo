@@ -1,8 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public enum Status { POISONED, PARALYZED, BLEED, VULNERABLE, BERSERK, AFRAID, DEFENDING, DEATH }
+public enum Status { Poisoned, Paralyzed, Bleeding, Vulnerable, Berserk, Afraid, Defending, Death }
 [System.Serializable]
 public class Statuses
 {
@@ -31,7 +27,7 @@ public class Statuses
     {
         this.status = status;
         this.expirationTurn = expirationTurn;
-    } 
+    }
 
     public static void HandleStatuses(Character character, int turn)
     {

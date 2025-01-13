@@ -7,4 +7,5 @@ public class Equipment : Items
     public int magicDefenseBuff;
     public int agilityBuff;
     public EquipmentWeight weight;
+    public int accuracyMod;
 }

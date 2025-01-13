@@ -49,7 +49,7 @@ public class TargetingUI : MonoBehaviour
     }
 
     // normal target activation
-    public void ActivateTargets(Character character)
+    public void ActivateTargets()
     {
         allHeroes.interactable = false;
         allEnemies.interactable = false;
@@ -67,14 +67,15 @@ public class TargetingUI : MonoBehaviour
 
         for (int i = 0; i < enemyButtons.Length && i < enemies.Length; ++i)
         {
-            if (enemies[i].enemy.isActive && (enemies.Where(e => e.enemy.isActive).ToList().Count == enemies.Where(e => e.enemy.isBackRow).ToList().Count
-                                            || !enemies[i].enemy.isBackRow))
+            int frontRowEnemies = enemies.Where(e => e.enemy.isActive && !e.enemy.isBackRow).Count();
+
+            if (enemies[i].enemy.isActive && (frontRowEnemies == 0 || !enemies[i].enemy.isBackRow))
                 enemyButtons[i].interactable = true;
         }
     }
 
     // activating targets for a skill
-    public void ActivateTargets(Skill skill, Character character)
+    public void ActivateTargets(Skill skill)
     {
         var buttons = allHeroes.GetComponentsInChildren<Button>().Where(b => b != allHeroes).ToArray();
         var characters = allHeroes.GetComponentsInChildren<CharacterHUD>();
@@ -145,16 +146,18 @@ public class TargetingUI : MonoBehaviour
                     buttons[i].interactable = true;
             }
 
+            int frontRowEnemies = enemies.Where(e => e.enemy.isActive && !e.enemy.isBackRow).Count();
+
             for (int i = 0; i < enemyButtons.Length && i < enemies.Length; ++i)
             {
-                if (enemies[i].enemy.isActive && (enemies.Length == 1 || !enemies[i].enemy.isBackRow))
+                if (enemies[i].enemy.isActive && (frontRowEnemies == 0 || !enemies[i].enemy.isBackRow))
                     enemyButtons[i].interactable = true;
             }
         }
     }
 
     // activating targets for an item
-    public void ActivateTargets(Items item, Character character)
+    public void ActivateTargets(BattleItem item)
     {
         var buttons = allHeroes.GetComponentsInChildren<Button>().Where(b => b != allHeroes).ToArray();
         var characters = allHeroes.GetComponentsInChildren<CharacterHUD>();
@@ -162,9 +165,9 @@ public class TargetingUI : MonoBehaviour
         var enemyButtons = allEnemies.GetComponentsInChildren<Button>().Where(b => b != allEnemies).ToArray();
         var enemies = allEnemies.GetComponentsInChildren<EnemyHUD>();
 
-        if (item.itemEffect.itemType == ItemEffectType.REVIVE)
+        if (item is ReviveItem)
         {
-            if (item.itemEffect.isMultiTargeted)
+            if (item.isMultiTargeted)
             {
                 allHeroes.interactable = true;
                 allEnemies.interactable = true;
@@ -190,7 +193,7 @@ public class TargetingUI : MonoBehaviour
             }
 
         }
-        if (item.itemEffect.isMultiTargeted)
+        if (item.isMultiTargeted)
         {
             allHeroes.interactable = true;
             allEnemies.interactable = true;

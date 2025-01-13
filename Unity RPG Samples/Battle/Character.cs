@@ -1,10 +1,6 @@
-using JetBrains.Annotations;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 public enum Elements { NONE, FIRE, WATER, EARTH, ELECTRIC, WIND, LIGHT, DARK, }
 public abstract class Character : MonoBehaviour
@@ -30,21 +26,23 @@ public abstract class Character : MonoBehaviour
     public bool isActive;
     public bool isBackRow;
 
-    public virtual int attack { get { return strength; } }
-    public virtual int defense { get { return constitution; } }
-    public virtual int magAtk {  get { return intelligence; } }
-    public virtual int magDef {  get { return spirit; } }
-    public virtual int agility { get { return speed; } }
+    public virtual int attack => strength;
+    public virtual int defense => constitution;
+    public virtual int magAtk => intelligence;
+    public virtual int magDef => spirit;
+    public virtual int agility => speed;
+    public virtual int hitPercent => 100;
+    public virtual int dodgePercent => 0;
 
     public virtual float FindPhysicalDamageStatusModifier()
     {
         float modifier = 1;
 
-        if (currStatuses.Where(s => s.status == Status.VULNERABLE).FirstOrDefault() != null) { modifier *= 2; }
+        if (currStatuses.Where(s => s.status == Status.Vulnerable).FirstOrDefault() != null) { modifier *= 2; }
 
-        if (currStatuses.Where(s => s.status == Status.AFRAID).FirstOrDefault() != null) { modifier *= 1.5f; }
+        if (currStatuses.Where(s => s.status == Status.Afraid).FirstOrDefault() != null) { modifier *= 1.5f; }
 
-        if (currStatuses.Where(s => s.status == Status.DEFENDING).FirstOrDefault() != null) { modifier /= 2; }
+        if (currStatuses.Where(s => s.status == Status.Defending).FirstOrDefault() != null) { modifier /= 2; }
 
         return modifier;
     }
@@ -53,11 +51,11 @@ public abstract class Character : MonoBehaviour
     {
         float modifier = 1;
 
-        if (currStatuses.Where(s => s.status == Status.VULNERABLE).FirstOrDefault() != null) { modifier /= 2; }
+        if (currStatuses.Where(s => s.status == Status.Vulnerable).FirstOrDefault() != null) { modifier /= 2; }
 
-        if (currStatuses.Where(s => s.status == Status.AFRAID).FirstOrDefault() != null) { modifier /= 1.5f; }
+        if (currStatuses.Where(s => s.status == Status.Afraid).FirstOrDefault() != null) { modifier /= 1.5f; }
 
-        if (currStatuses.Where(s => s.status == Status.BERSERK).FirstOrDefault() != null) { modifier *= 1.5f; }
+        if (currStatuses.Where(s => s.status == Status.Berserk).FirstOrDefault() != null) { modifier *= 1.5f; }
 
         return modifier;
     }
@@ -81,8 +79,7 @@ public abstract class Character : MonoBehaviour
 
     public virtual int Attack(Character enemy, int turnCounter)
     {
-        double charAgility = agility, enemyAgility = enemy.agility;
-        double hitChance = ((charAgility * 2 / enemyAgility) + .01) * 100;
+        double hitChance = hitPercent - enemy.dodgePercent;
 
         if (hitChance >= UnityEngine.Random.Range(0, 100))
         {

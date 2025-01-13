@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Weapon")]
+[CreateAssetMenu(fileName = "New Weapon", menuName = "Equipment/Weapon")]
 public class Weapon : Equipment
 {
     public Elements element;
     public List<Statuses> statuses;
+
     public void ApplyWeaponStatuses(Character enemy, int turnCounter)
     {
         foreach (var status in statuses)
@@ -28,7 +29,7 @@ public class Weapon : Equipment
                     newStatus.expirationTurn += turnCounter;
                     enemy.currStatuses.Add(newStatus);
 
-                    if (newStatus.status == Status.DEATH)
+                    if (newStatus.status == Status.Death)
                     {
                         enemy.currHP = 0;
                         enemy.isActive = false;

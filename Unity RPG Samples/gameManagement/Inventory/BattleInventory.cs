@@ -1,14 +1,12 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 [System.Serializable]
 public class BattleInventory
 {
-    public List<Items> items;
+    public List<BattleItem> items;
     public int maxItems;
 
-    public void AddItem(Items item)
+    public void AddItem(BattleItem item)
     {
         if (items.Count == maxItems) return;
 

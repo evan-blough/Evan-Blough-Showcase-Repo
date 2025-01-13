@@ -12,12 +12,14 @@ public class WinLossScript : MonoBehaviour
     {
         int expGained = 0;
         int goldGained = 0;
+        int classXpGained = 0;
         int index = 0;
 
         foreach (Enemy enemy in enemies)
         {
             expGained += enemy.expValue;
             goldGained += enemy.goldValue;
+            classXpGained += enemy.classXpValue;
         }
 
         BattlePartyHandler.instance.gold += goldGained;
@@ -36,6 +38,7 @@ public class WinLossScript : MonoBehaviour
             if (character.isActive)
             {
                 character.expHandler.AddExperience(character, expGained);
+                character.classExpHandler.AddClassExperience(character, classXpGained);
                 characterExpText[index].text = expGained.ToString();
             }
 

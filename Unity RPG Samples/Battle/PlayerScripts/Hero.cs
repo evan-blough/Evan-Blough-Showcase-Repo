@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Hero : PlayerCharacter
@@ -11,17 +9,20 @@ public class Hero : PlayerCharacter
             if (weapon is null) return strength + level * 2;
 
             return strength + (weapon is null ? 0 : weapon.attackBuff) + (armor is null ? 0 : armor.attackBuff)
-                + (accessory1 is null ? 0 : accessory1.attackBuff) + (accessory2 is null ? 0 : accessory2.attackBuff);
+                + (accessory1 is null ? 0 : accessory1.attackBuff) + (accessory2 is null ? 0 : accessory2.attackBuff)
+                + (currClass is null ? 0 : currClass.classAtkMod);
         }
     }
     public override int agility
     {
         get
         {
-            if (armor is null && accessory1 is null && accessory2 is null) return speed + 20 + (level * 2);
+            if (armor is null && accessory1 is null && accessory2 is null) return speed + 20 + (level * 2)
+                    + (currClass is null ? 0 : currClass.classAgilityMod);
 
             return speed + (weapon is null ? 0 : weapon.agilityBuff) + (armor is null ? 0 : armor.agilityBuff)
-                + (accessory1 is null ? 0 : accessory1.agilityBuff) + (accessory2 is null ? 0 : accessory2.agilityBuff);
+                + (accessory1 is null ? 0 : accessory1.agilityBuff) + (accessory2 is null ? 0 : accessory2.agilityBuff)
+                + (currClass is null ? 0 : currClass.classAgilityMod);
         }
     }
     public override void OnLevelUp()

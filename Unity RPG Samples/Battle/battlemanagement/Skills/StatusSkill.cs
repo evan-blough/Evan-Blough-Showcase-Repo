@@ -3,7 +3,7 @@ using UnityEngine;
 
 
 [System.Serializable]
-[CreateAssetMenu(fileName = "New Status Skill")]
+[CreateAssetMenu(fileName = "New Status Skill", menuName = "Skills/Status Skill")]
 public class StatusSkill : Skill
 {
     public override List<string> UseSkill(Character character, List<Character> targets, int turnCounter)
@@ -23,6 +23,12 @@ public class StatusSkill : Skill
 
         foreach (var target in targets)
         {
+            if (!target.isActive)
+            {
+                results.Add("");
+                continue;
+            }
+
             if (applyTargetStatuses.Count > 0)
             {
                 foreach (var status in applyTargetStatuses)
@@ -32,7 +38,7 @@ public class StatusSkill : Skill
             }
             if (removeTargetStatuses.Count > 0)
             {
-                foreach (var status in applyTargetStatuses)
+                foreach (var status in removeTargetStatuses)
                     TargetStatusRemoval(character, status, target, turnCounter);
             }
         }

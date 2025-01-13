@@ -7,21 +7,21 @@ public class ItemsUI : MonoBehaviour
 {
     public GameObject buttonPrefab;
     public BattleStateMachine bsm;
-    public Items currentItem;
+    public BattleItem currentItem;
     public DescriptionBox descriptionBox;
 
     public void CallItemsHUD()
     {
         bsm.uiHandler.UIOnItems();
 
-        List<Items> items = new List<Items>();
+        List<BattleItem> items = new List<BattleItem>();
 
         foreach (Transform child in bsm.uiHandler.itemsUI.transform)
         {
             Destroy(child.gameObject);
         }
 
-        foreach (Items item in ((PlayerCharacter)bsm.currentCharacter).charInventory.items)
+        foreach (BattleItem item in ((PlayerCharacter)bsm.currentCharacter).charInventory.items)
         {
             if (item is null) continue;
 
@@ -40,10 +40,10 @@ public class ItemsUI : MonoBehaviour
 
         bsm.uiHandler.itemsUI.gameObject.SetActive(true);
     }
-    public void OnItemButton(Items item)
+    public void OnItemButton(BattleItem item)
     {
         currentItem = item;
-        bsm.uiHandler.targetingUI.ActivateTargets(item, bsm.currentCharacter);
+        bsm.uiHandler.targetingUI.ActivateTargets(item);
     }
 
     public IEnumerator OnTargetSelected(List<Character> targets)
@@ -54,26 +54,26 @@ public class ItemsUI : MonoBehaviour
 
         returns = currentItem.UseItem(targets, bsm.turnCounter);
 
-
-        yield return StartCoroutine(ApplyText(targets, returns, currentItem.itemEffect.itemType));
+        bool isRecoveryItem = currentItem is ReviveItem || currentItem is HealItem || currentItem is StatusRemovalItem || currentItem is SPRecoveryItem;
+        yield return StartCoroutine(ApplyText(targets, returns, isRecoveryItem));
         currentItem = null;
 
         StartCoroutine(bsm.FindNextTurn());
     }
 
-    public IEnumerator ApplyText(List<Character> targets, List<string> returns, ItemEffectType type)
+    public IEnumerator ApplyText(List<Character> targets, List<string> returns, bool isRecoveryItem)
     {
-        HandleItemText(targets, returns, type);
+        HandleItemText(targets, returns, isRecoveryItem);
         yield return new WaitForSeconds(.55f);
 
         for (int i = 0; i < returns.Count; i++) returns[i] = string.Empty;
-        HandleItemText(targets, returns, ItemEffectType.NONE);
+        HandleItemText(targets, returns, false);
         yield return new WaitForSeconds(.75f);
     }
 
-    public void HandleItemText(List<Character> target, List<string> text, ItemEffectType type)
+    public void HandleItemText(List<Character> target, List<string> text, bool isRecoveryItem)
     {
-        Color color = ((type == ItemEffectType.HEAL || ItemEffectType.RECOVER_SP == type || ItemEffectType.REVIVE == type) ? Color.green : Color.white);
+        Color color = isRecoveryItem ? Color.green : Color.white;
 
         bsm.battleStationManager.SetTextColor(color);
 

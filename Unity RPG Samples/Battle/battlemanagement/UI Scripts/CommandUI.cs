@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,7 +11,12 @@ public class CommandUI : MonoBehaviour
     public void CommandButtonClick()
     {
         bsm.uiHandler.UIOnCommand();
-        swapPositionsButton.gameObject.SetActive(!bsm.currentCharacter.isBackRow);
+
+        if (bsm.playerCharacterList.Any(pc => !pc.isActive))
+            swapPositionsButton.gameObject.SetActive(false);
+        else
+            swapPositionsButton.gameObject.SetActive(!bsm.currentCharacter.isBackRow);
+
         recoverButton.gameObject.SetActive(bsm.currentCharacter.isBackRow);
     }
 
@@ -29,7 +31,7 @@ public class CommandUI : MonoBehaviour
         if (bsm.currentCharacter.currSP > bsm.currentCharacter.maxSP) bsm.currentCharacter.currSP = bsm.currentCharacter.maxSP;
 
         if (bsm.currentCharacter.currStatuses.Count > 0)
-            bsm.currentCharacter.currStatuses.RemoveAll(s => s.status == Status.POISONED || s.status == Status.BLEED || s.status == Status.VULNERABLE);
+            bsm.currentCharacter.currStatuses.RemoveAll(s => s.status == Status.Poisoned || s.status == Status.Bleeding || s.status == Status.Vulnerable);
 
         StartCoroutine(bsm.FindNextTurn());
     }
@@ -46,9 +48,9 @@ public class CommandUI : MonoBehaviour
     public void OnDefendButton()
     {
         bsm.uiHandler.ResetUI();
-        Statuses status = new Statuses(Status.DEFENDING, bsm.turnCounter + 1);
-        if (bsm.currentCharacter.currStatuses.Where(s => s.status == Status.DEFENDING).Any())
-            bsm.currentCharacter.currStatuses.First(s => s.status == Status.DEFENDING).expirationTurn = bsm.turnCounter + 1;
+        Statuses status = new Statuses(Status.Defending, bsm.turnCounter + 1);
+        if (bsm.currentCharacter.currStatuses.Where(s => s.status == Status.Defending).Any())
+            bsm.currentCharacter.currStatuses.First(s => s.status == Status.Defending).expirationTurn = bsm.turnCounter + 1;
         else
             bsm.currentCharacter.currStatuses.Add(status);
 
