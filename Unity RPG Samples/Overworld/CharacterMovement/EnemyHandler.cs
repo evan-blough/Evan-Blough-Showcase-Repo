@@ -114,7 +114,6 @@ public class EnemyHandler : NonPlayerCharacterHandler
     {
         if (chasingCharacter == other.gameObject.GetComponent<PlayerCharacterHandler>() && chasingCharacter != null)
         {
-            Debug.Log("fired");
             chasingCharacter = null;
             state = EnemyState.RETURNING;
         }

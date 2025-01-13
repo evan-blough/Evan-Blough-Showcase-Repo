@@ -3,6 +3,7 @@ using UnityEngine;
 public class OptionsList : MonoBehaviour
 {
     PlayerControls controls;
+    public MenuHandler menuHandler;
 
     private void Awake()
     {
@@ -14,6 +15,12 @@ public class OptionsList : MonoBehaviour
 
         controls.menu.Return.performed += ctx => ReturnToOverworld();
     }
+
+    public void OnItemsButton()
+    {
+        menuHandler.OpenItemMenu();
+    }
+
     public void OnExitButton()
     {
         Application.Quit();

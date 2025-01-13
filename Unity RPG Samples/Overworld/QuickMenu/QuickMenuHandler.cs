@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class MenuHandler : MonoBehaviour
+public class QuickMenuHandler : MonoBehaviour
 {
     PlayerControls controls;
     public QuickMenu menu;

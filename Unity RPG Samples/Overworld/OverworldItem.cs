@@ -14,16 +14,18 @@ public class OverworldItem : MonoBehaviour
 
     public void InteractWithObject()
     {
-        var text = BattlePartyHandler.instance.inventory.AddItem(item, itemNum);
-        isCollected = true;
-        controls.overworld.Interact.performed -= ctx => InteractWithObject();
+        if (!isCollected)
+        {
+            var text = BattlePartyHandler.instance.inventory.AddItem(item, itemNum);
+            isCollected = true;
+            controls.overworld.Interact.performed -= ctx => InteractWithObject();
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.GetComponent<PlayerCharacterHandler>() && !isCollected)
         {
-            Debug.Log("CanInteract");
             controls.overworld.Interact.performed += ctx => InteractWithObject();
         }
     }
@@ -32,7 +34,6 @@ public class OverworldItem : MonoBehaviour
     {
         if (other.gameObject.GetComponent<PlayerCharacterHandler>() && !isCollected)
         {
-            Debug.Log("Can'tInteract");
             controls.overworld.Interact.performed -= ctx => InteractWithObject();
         }
     }

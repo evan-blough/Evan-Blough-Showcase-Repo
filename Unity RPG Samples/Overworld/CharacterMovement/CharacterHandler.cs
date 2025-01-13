@@ -17,12 +17,14 @@ public abstract class CharacterHandler : MonoBehaviour
     protected Vector3 velocity;
     public bool isGrounded;
     public Transform groundCheck;
-    public float groundDistance = 1f;
+    private RaycastHit hit;
+    public float groundDistance { get { return (controller.height / 2) + 0.1f; } }
     public LayerMask groundMask;
 
     private void Start()
     {
         mainCamera = Camera.main;
+        controller.attachedRigidbody.collisionDetectionMode = CollisionDetectionMode.Continuous;
     }
     public virtual void Move()
     {
@@ -68,8 +70,11 @@ public abstract class CharacterHandler : MonoBehaviour
         {
             velocity.y = 0f;
         }
+
         //gravity
-        velocity.y += gravity * Time.deltaTime;
+        if (!isGrounded)
+            velocity.y += gravity * Time.deltaTime;
+
         controller.Move(velocity * Time.deltaTime);
     }
 
