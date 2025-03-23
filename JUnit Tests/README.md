@@ -1,0 +1,1 @@
+This is the term project for SE 4560 Software Testing, and consists of all 10 test cases written for commons-collections, an open-source Java library providing robust expansions on pre-existing collection types in Java.
